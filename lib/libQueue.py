@@ -39,10 +39,11 @@ cdwn   ='DOWN'
 
 class queue(object):
     def __init__(self,init='#'):
+        self.getqueue()
         if init=='new':
             self.db=dbif.gencur('DELETE FROM queue')
             self.db.connection.commit()
-        self.getqueue()
+            self.getqueue()
         pass
 
     def getqueue(self):
@@ -50,9 +51,10 @@ class queue(object):
         self.queue=self.db.cur.fetchall()
     
     def addItem(self,newItemObj):
-        print 'add check that newItem is instance of newItem'
+        #check that newItem is instance of newItem
         assert isinstance(newItemObj, newItem)
-        qry="INSERT INTO queue (id,status) values ('%s','%s');" % (newItemObj.ID,cnew)
+        
+        qry="INSERT INTO queue (id,status,agentid) values ('%s','%s','%s');" % (newItemObj.ID,cnew,newItemObj.agentID)
         if debug:
             print qry
         self.db.exe(qry)
@@ -84,8 +86,10 @@ class queue(object):
         rec=self.db.cur.fetchone()
         if rec==None:
             #no record found, i.e. the record has not been locked properly
-            return "#"        
-        return nid
+            return "#"
+        #Prepare queuedItem object
+        x=queuedItem(nid)
+        return x
 
     def resetDownloadQueue(self):
         qry="UPDATE queue SET pid='', status='%s';" % (cnew)
@@ -99,17 +103,57 @@ class queue(object):
     
 
 class queuedItem(object):
-    def __init__(self):
-        pass
+    def __init__(self, itemID):
+        self.db=dbif.gencur('SELECT * FROM queue')
+        #get and lock the first avaiable item in the list
+        qry="SELECT ID, STATUS, pid, agentid, LAST_UPDATE FROM queue where ID='%s';" % itemID
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchone()
+        if rec==None:
+            #no record found
+            self.id="#"
+            return
+        self.id      =rec[0]
+        self.status  =rec[1]
+        self.pid     =rec[2]
+        self.agentid =rec[3]
+        self.last_update=rec[4]
+
+        #Get the download agent characteristic
+        qry="SELECT ID, cli FROM agent where id='%s';" % self.agentid
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchone()
+        if rec!=None:
+            self.agentcli=rec[1]
+        
+        #Get the list of files to be downloaded
+        qry="SELECT ID, filename, url FROM files where qid='%s';" % itemID
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchall()
+        if rec==None:
+            #no record found
+            return
+        self.files=list()
+        for i in rec:
+            x=dict()
+            x['fileid']   =i[0]
+            x['filename'] =i[1]
+            x['url']      =i[2]
+            self.files.append(x)
+        return
 
 class newItem(object):
     def __init__(self):
         default="#"
         self.ID=default
+        self.agentID=default
         self.files=list()
     
     def setID(self,newid):
         self.ID=newid
+
+    def setAgent(self,agentID):
+        self.agentID=agentID
         
     def addFile(self, filename, url, desc="#"):
         x={'filename':filename,

@@ -103,6 +103,7 @@ def getSampleProduct():
     x=libQueue.queue('new')
     y=libQueue.newItem()
     y.setID('S1A_WV_SLC__1SSH_20140406T133433_20140406T133816_000039_7FFF80_54EF.SAFE.'+str(os.getpid()))
+    y.setAgent('wget')
     for i in files:
         y.addFile(i,urlprefix+i[2:])
     x.addItem(y)

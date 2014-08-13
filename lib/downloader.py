@@ -18,6 +18,7 @@ prjFolder=currDir.split(prjName)[0]+prjName
 sys.path.append(prjFolder+'/lib')
 
 import libQueue
+import pprint
 
 ## download the first item in the queue
 
@@ -29,7 +30,7 @@ def main():
     if y=='#':
         #no record found
         return
-    print y
+    pprint.pprint(y.__dict__)
     
 if __name__ == "__main__":
     #Processing arguments from command line
