@@ -24,6 +24,7 @@ import logging
 import pprint
 import libQueue
 import dbif
+import time
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -48,15 +49,16 @@ class queue(object):
         self.db=dbif.gencur('SELECT * FROM queue')
         self.queue=self.db.cur.fetchall()
     
-    def addItem(self,newItem):
+    def addItem(self,newItemObj):
         print 'add check that newItem is instance of newItem'
-        qry="INSERT INTO queue (id,status) values ('%s','%s');" % (newItem.ID,cnew)
+        assert isinstance(newItemObj, newItem)
+        qry="INSERT INTO queue (id,status) values ('%s','%s');" % (newItemObj.ID,cnew)
         if debug:
             print qry
         self.db.exe(qry)
         qry="INSERT INTO files (qid, filename, url) values ('%s', '%s', '%s');"
-        for i in newItem.files:
-            iqry=qry % (newItem.ID, i['filename'], i['url'])
+        for i in newItemObj.files:
+            iqry=qry % (newItemObj.ID, i['filename'], i['url'])
             if debug:
                 print iqry
             self.db.exe(iqry)
@@ -71,11 +73,25 @@ class queue(object):
             #no record found
             return "#"
         nid=rec[0]
-        qry="UPDATE queue SET status='%s', note='%s' where ID='%s';" % (cdwn, pid, nid)
+        #lock the current record
+        qry="UPDATE queue SET status='%s', pid='%s' where ID='%s';" % (cdwn, pid, nid)
         print qry
         self.db.exe(qry)
+        #wait 1 second and check that the record is indeed locked
+        time.sleep(1)
+        qry="SELECT ID, PID FROM queue where id='%s' and pid='%s';" % (nid, pid)
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchone()
+        if rec==None:
+            #no record found, i.e. the record has not been locked properly
+            return "#"        
         return nid
-        
+
+    def resetDownloadQueue(self):
+        qry="UPDATE queue SET pid='', status='%s';" % (cnew)
+        print qry
+        self.db.exe(qry)
+                
     def dump(self):
         self.getqueue()
         pprint.pprint(self.queue)

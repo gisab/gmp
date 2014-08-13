@@ -23,7 +23,12 @@ import libQueue
 
 def main():
     x=libQueue.queue()
+    #resetDownloadQueue for debug purposes
+    x.resetDownloadQueue()
     y=x.getItem(str(os.getpid()))
+    if y=='#':
+        #no record found
+        return
     print y
     
 if __name__ == "__main__":
