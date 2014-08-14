@@ -57,7 +57,7 @@ logFile =open('downloader.log','a')
 logFile.write('\n\n'+'*'.center(80,'*') + '\n\n\n\n')
 
 def log(logtext):
-    print datetime.datetime.now().isoformat()+' ' + logtext
+    #print datetime.datetime.now().isoformat()+' ' + logtext
     logFile.write(datetime.datetime.now().isoformat()+' ' + logtext + '\n')
     logFile.flush()
     
@@ -103,11 +103,12 @@ def main():
             os.makedirs(targetFolder)
         cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
-        print cmd
+        log(cmd)
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         childs.append(newProc)
         #time.sleep(1)
-    os.wait()
+    print "*** add a wait for running processes"
+    subprocess.os.wait()
     result=monitorChilds(childs)
     pprint.pprint(result)
     

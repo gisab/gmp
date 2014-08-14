@@ -23,6 +23,7 @@ import libQueue
 def getSampleProduct():
     urlprefix='http://localhost:8888/S1/S1A_WV_SLC__1SSH_20140406T133433_20140406T133816_000039_7FFF80_54EF.ISIP/'
     files=(
+        './not_existing_file',
         './S1A_WV_SLC__1SSH_20140406T133433_20140406T133816_000039_7FFF80_54EF.SAFE/annotation/calibration/calibration-s1a-wv1-slc-hh-20140406t133433-20140406t133436-000039-7fff80-001.xml',
         './S1A_WV_SLC__1SSH_20140406T133433_20140406T133816_000039_7FFF80_54EF.SAFE/annotation/calibration/calibration-s1a-wv1-slc-hh-20140406t133503-20140406t133506-000039-7fff80-003.xml',
         './S1A_WV_SLC__1SSH_20140406T133433_20140406T133816_000039_7FFF80_54EF.SAFE/annotation/calibration/calibration-s1a-wv1-slc-hh-20140406t133532-20140406t133535-000039-7fff80-005.xml',
