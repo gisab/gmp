@@ -11,21 +11,26 @@
 ###########################################################
 
 prjName='gmp'
-#currDir=os.getcwd()
+APPID  ='downloader'
+
 import os,sys
 currDir=os.path.realpath(__file__)
 prjFolder=currDir.split(prjName)[0]+prjName
 sys.path.append(prjFolder+'/lib')
 
 import libQueue
+import config
 import datetime
 import pprint
 import subprocess
 import time
 
 # config
-maxFilesPerItem=2
-waittime=1
+maxDwnFilesPerItem  =int(config.ini.get(APPID,'maxDwnFilesPerItem').replace('$PRJ',prjFolder))
+repFolder           =config.ini.get(APPID,'repository').replace('$PRJ',prjFolder)
+maxBandwidth        =config.ini.get(APPID,'maxBandwidth').replace('$PRJ',prjFolder)
+sleepTimeBetweenFileDownload =int(config.ini.get(APPID,'sleepTimeBetweenFileDownload').replace('$PRJ',prjFolder))
+
 childs=list()
 
 def monitorChilds(processList):
@@ -76,9 +81,9 @@ def main():
         newid=str(ifile['fileid'])
         currMonitor=monitorChilds(childs)
         #wait for a free resource
-        while(currMonitor['nRun']>=maxFilesPerItem):
+        while(currMonitor['nRun']>=maxDwnFilesPerItem):
             log('MAIN: waiting for childs: ' + str(currMonitor['running']))
-            time.sleep(waittime)
+            time.sleep(sleepTimeBetweenFileDownload)
             currMonitor=monitorChilds(childs)
         #print the result of the last released resource
         #compare succeded processes
@@ -92,7 +97,12 @@ def main():
 
         log('MAIN: Spawning new process ' +newid)
         logf='wget.log'
-        cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', ifile['filename']).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
+        targetFilename=repFolder+ifile['filename']
+        targetFolder=os.path.split(targetFilename)[0]
+        if not os.path.exists(targetFolder):
+            os.makedirs(targetFolder)
+        cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
+        cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         childs.append(newProc)
