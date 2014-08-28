@@ -11,7 +11,7 @@
 ###########################################################
 
 prjName='gmp'
-APPID  ='downloader'
+APPID  ='downloadManager'
 
 import os,sys
 currDir=os.path.realpath(__file__)
@@ -26,12 +26,9 @@ import subprocess
 import time
 
 # config
-maxDwnFilesPerItem  =int(config.ini.get(APPID,'maxDwnFilesPerItem'))
-repFolder           =config.ini.get(APPID,'repository').replace('$PRJ',prjFolder)
-maxBandwidth        =config.ini.get(APPID,'maxBandwidth')
-sleepTimeBetweenFileDownload =int(config.ini.get(APPID,'sleepTimeBetweenFileDownload'))
-user                =config.ini.get(APPID,'user')
-password            =config.ini.get(APPID,'password')
+cli            =config.ini.get(APPID,'cli').replace('$PRJ',prjFolder)
+maxDownloader  =int(config.ini.get(APPID,'maxDownloader'))
+sleepTimeBetweenDownloader =int(config.ini.get(APPID,'sleepTimeBetweenDownloader').replace('$PRJ',prjFolder))
 
 childs=list()
 
@@ -65,28 +62,16 @@ def log(logtext):
     
 ## download the first item in the queue
 def main():
-    #Get the first available item to be downloaded
-    x=libQueue.queue()
-    #resetDownloadQueue for debug purposes
-    #x.resetDownloadQueue()
-    y=x.getItem(str(os.getpid()))
-    if y=='#':
-        #no record found
-        return
-    #pprint.pprint(y.__dict__)
-    print "Downloading %s" % y.id
-    
     #Invoke agents for files to be downloaded
     previousMonitor=dict()
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
-    for ifile in y.files:
-        newid=str(ifile['fileid'])
+    while(True):
         currMonitor=monitorChilds(childs)
         #wait for a free resource
-        while(currMonitor['nRun']>=maxDwnFilesPerItem):
+        while(currMonitor['nRun']>=maxDownloader):
             log('MAIN: waiting for childs: ' + str(currMonitor['running']))
-            time.sleep(sleepTimeBetweenFileDownload)
+            time.sleep(sleepTimeBetweenDownloader)
             currMonitor=monitorChilds(childs)
         #print the result of the last released resource
         #compare succeded processes
@@ -97,29 +82,19 @@ def main():
             for i in diff:
                 log("MAIN: Completed " + status + " process " +str(i))
         previousMonitor=currMonitor     
-
-        log('MAIN: Spawning new process ' +newid)
-        logf='wget.log'
-        targetFilename=repFolder+ifile['filename']
-        targetFolder=os.path.split(targetFilename)[0]
-        if not os.path.exists(targetFolder):
-            os.makedirs(targetFolder)
-        cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
-        cmd=cmd.replace('$USER',user)
-        cmd=cmd.replace('$PASS',password)
-        cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
-        log(cmd)
-        newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
+        log('MAIN: Spawning new process ')
+        newProc=subprocess.Popen(['/bin/sh', '-c', cli + ' ']);
         childs.append(newProc)
         #time.sleep(1)
+
     subprocess.os.wait()
-    #result=monitorChilds(childs)
-    #pprint.pprint(result)
+    result=monitorChilds(childs)
+    pprint.pprint(result)
     
 if __name__ == "__main__":
     #Processing arguments from command line
     import argparse
-    parser = argparse.ArgumentParser(description="Download the first item in the queue")
+    parser = argparse.ArgumentParser(description="Download Manager")
     parser.add_argument("--test", action="store_true", dest="test",   help="self test")
     args=parser.parse_args()
     main()

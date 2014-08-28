@@ -125,6 +125,8 @@ class queuedItem(object):
         rec=self.db.cur.fetchone()
         if rec!=None:
             self.agentcli=rec[1]
+        else:
+            self.agentcli="ERROR: Agent CLI not found!"
         
         #Get the list of files to be downloaded
         qry="SELECT ID, filename, url FROM files where qid='%s';" % itemID

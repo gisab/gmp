@@ -17,6 +17,7 @@ currDir=os.path.realpath(__file__)
 prjFolder=currDir.split(prjName)[0]+prjName
 sys.path.append(prjFolder+'/lib')
 import libQueue
+import pprint
 
 ## get a download plan and add to the queue
 
@@ -119,10 +120,30 @@ def selftest():
     x.addItem(y)
     x.dump()
     
+
+def getPlugin(target):
+    if target=='dhus':
+        import pluginDhus
+        x=pluginDhus.gmpPluginDhus()
+        return x
+    return
+    
+## Main function
+def main(target):
+    archive=getPlugin(target)
+    plan=archive.downloadPlan()
+    x=libQueue.queue(init='new')
+    for plannedItem in plan:
+        try:
+            x.addItem(plannedItem)
+        except:
+            print "Failed to import product %s" % plannedItem.ID
+
 if __name__ == "__main__":
     #Processing arguments from command line
     import argparse
     parser = argparse.ArgumentParser(description="Query for a download plan and add to the queue")
+    parser.add_argument("--target", dest="target", help="target system to be contacted")
     parser.add_argument("--test", action="store_true", dest="test",   help="self test")
     args=parser.parse_args()
     if args.test:
@@ -130,4 +151,7 @@ if __name__ == "__main__":
         #selftest()
         getSampleProduct()
         sys.exit(0)
+    if args.target in ['dhus']:
+        main(args.target)
+        sys.exit()
     print "No valid argument found; try -h."
