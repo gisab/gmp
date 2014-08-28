@@ -30,8 +30,6 @@ maxDwnFilesPerItem  =int(config.ini.get(APPID,'maxDwnFilesPerItem'))
 repFolder           =config.ini.get(APPID,'repository').replace('$PRJ',prjFolder)
 maxBandwidth        =config.ini.get(APPID,'maxBandwidth')
 sleepTimeBetweenFileDownload =int(config.ini.get(APPID,'sleepTimeBetweenFileDownload'))
-user                =config.ini.get(APPID,'user')
-password            =config.ini.get(APPID,'password')
 
 childs=list()
 
@@ -62,7 +60,13 @@ def log(logtext):
     #print datetime.datetime.now().isoformat()+' ' + logtext
     logFile.write(datetime.datetime.now().isoformat()+' ' + logtext + '\n')
     logFile.flush()
-    
+
+def getCredential(targetid):
+    dwnappid='plugin'+targetid[0].upper()+targetid[1:].lower()
+    username = config.ini.get(dwnappid,'username')
+    password = config.ini.get(dwnappid,'password')
+    return (username,password)
+
 ## download the first item in the queue
 def main():
     #Get the first available item to be downloaded
@@ -75,6 +79,9 @@ def main():
         return
     #pprint.pprint(y.__dict__)
     print "Downloading %s" % y.id
+    
+    #Get credential
+    (username,password)=getCredential(y.targetid)
     
     #Invoke agents for files to be downloaded
     previousMonitor=dict()
@@ -105,14 +112,19 @@ def main():
         if not os.path.exists(targetFolder):
             os.makedirs(targetFolder)
         cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
-        cmd=cmd.replace('$USER',user)
+        cmd=cmd.replace('$USER',username)
         cmd=cmd.replace('$PASS',password)
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
+        #temporary network patch
+        if True:
+            cmd=cmd.replace('s1-pac1dmz-oda-v-20.sentinel1.eo.esa.int:80','localhost:14002')
+            print cmd
         log(cmd)
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         childs.append(newProc)
         #time.sleep(1)
     subprocess.os.wait()
+
     #result=monitorChilds(childs)
     #pprint.pprint(result)
     
