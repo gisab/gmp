@@ -139,6 +139,9 @@ def addSingleODAProduct(productID):
         newItem=archive.createItem(productID)
     except:
         print "Failed to get metalink from ODA for product %s" % productID
+    print "Retrieved metadata for product %s" % productID
+    if hasattr(newItem,'forcedStatus'):
+        print "   ODA status: %s" %newItem.forcedStatus
     x=libQueue.queue()
     try:
         x.addItem(newItem)
