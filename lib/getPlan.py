@@ -126,14 +126,22 @@ def getPlugin(target):
         import pluginDhus
         x=pluginDhus.gmpPluginDhus()
         return x
+    if target=='oda':
+        import pluginOda
+        x=pluginOda.gmpPluginOda()
+        return x
     return
     
 ## Main function
 def main(target):
     archive=getPlugin(target)
     plan=archive.downloadPlan()
-    x=libQueue.queue(init='new')
+    x=libQueue.queue()
+    i=0
     for plannedItem in plan:
+        i+=1
+        if i>5:
+            return
         try:
             x.addItem(plannedItem)
         except:
@@ -144,14 +152,22 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Query for a download plan and add to the queue")
     parser.add_argument("--target", dest="target", help="target system to be contacted")
+    parser.add_argument("--clean", action="store_true", dest="clean",   help="clean queue")
     parser.add_argument("--test", action="store_true", dest="test",   help="self test")
     args=parser.parse_args()
+    if args.clean:
+        debug=True
+        x=libQueue.queue(init='new')
+        sys.exit(0)
     if args.test:
         debug=True
         #selftest()
         getSampleProduct()
         sys.exit(0)
     if args.target in ['dhus']:
+        main(args.target)
+        sys.exit()
+    if args.target in ['oda']:
         main(args.target)
         sys.exit()
     print "No valid argument found; try -h."
