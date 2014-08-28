@@ -131,6 +131,19 @@ def getPlugin(target):
         x=pluginOda.gmpPluginOda()
         return x
     return
+
+##Add single product
+def addSingleODAProduct(productID):
+    archive=getPlugin('oda')
+    try:
+        newItem=archive.createItem(productID)
+    except:
+        print "Failed to get metalink from ODA for product %s" % productID
+    x=libQueue.queue()
+    try:
+        x.addItem(newItem)
+    except:
+        print "Failed to import product %s" % newItem.ID
     
 ## Main function
 def main(target):
@@ -152,6 +165,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Query for a download plan and add to the queue")
     parser.add_argument("--target", dest="target", help="target system to be contacted")
+    parser.add_argument("--singleproduct", dest="productId", help="add a single product in the queue")
     parser.add_argument("--clean", action="store_true", dest="clean",   help="clean queue")
     parser.add_argument("--test", action="store_true", dest="test",   help="self test")
     args=parser.parse_args()
@@ -168,6 +182,11 @@ if __name__ == "__main__":
         main(args.target)
         sys.exit()
     if args.target in ['oda']:
-        main(args.target)
+        if args.productId:
+            #specific product request
+            addSingleODAProduct(args.productId)
+        else:
+            #no single product request; get full available plan
+            main(args.target)
         sys.exit()
     print "No valid argument found; try -h."
