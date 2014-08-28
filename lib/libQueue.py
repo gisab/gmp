@@ -53,8 +53,11 @@ class queue(object):
     def addItem(self,newItemObj):
         #check that newItem is instance of newItem
         assert isinstance(newItemObj, newItem)
-        
-        qry="INSERT INTO queue (id,status,agentid) values ('%s','%s','%s');" % (newItemObj.ID,cnew,newItemObj.agentID)
+        if hasattr(newItemObj,'forcedStatus'):
+            newStatus=newItemObj.forcedStatus
+        else:
+            newStatus=cnew
+        qry="INSERT INTO queue (id,status,agentid,targetid,note) values ('%s','%s','%s','%s','%s');" % (newItemObj.ID,newStatus,newItemObj.agentID,newItemObj.targetID,newItemObj.note)
         if debug:
             print qry
         self.db.exe(qry)
@@ -106,7 +109,7 @@ class queuedItem(object):
     def __init__(self, itemID):
         self.db=dbif.gencur('SELECT * FROM queue')
         #get and lock the first avaiable item in the list
-        qry="SELECT ID, STATUS, pid, agentid, LAST_UPDATE FROM queue where ID='%s';" % itemID
+        qry="SELECT ID, STATUS, pid, agentid, targetid, LAST_UPDATE FROM queue where ID='%s';" % itemID
         self.db.cur.execute(qry)
         rec=self.db.cur.fetchone()
         if rec==None:
@@ -117,7 +120,8 @@ class queuedItem(object):
         self.status  =rec[1]
         self.pid     =rec[2]
         self.agentid =rec[3]
-        self.last_update=rec[4]
+        self.targetid=rec[4]
+        self.last_update=rec[5]
 
         #Get the download agent characteristic
         qry="SELECT ID, cli FROM agent where id='%s';" % self.agentid
@@ -149,14 +153,25 @@ class newItem(object):
         default="#"
         self.ID=default
         self.agentID=default
+        self.note=default
+        self.targetID=default
         self.files=list()
     
-    def setID(self,newid):
-        self.ID=newid
+    def setID(self,value):
+        self.ID=value
 
-    def setAgent(self,agentID):
-        self.agentID=agentID
-        
+    def setNote(self,value):
+        self.note=value
+
+    def setAgent(self,value):
+        self.agentID=value
+
+    def setTarget(self,value):
+        self.targetID=value
+
+    def forceStatus(self,value):
+        self.forcedStatus=value
+
     def addFile(self, filename, url, desc="#"):
         x={'filename':filename,
            'url':url}
