@@ -123,7 +123,8 @@ def main():
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         childs.append(newProc)
         #time.sleep(1)
-    subprocess.os.wait()
+    exit_codes = [p.wait() for p in childs]
+    print exit_codes
 
     #result=monitorChilds(childs)
     #pprint.pprint(result)
