@@ -85,7 +85,7 @@ def main():
         log('MAIN: Spawning new process ')
         newProc=subprocess.Popen(['/bin/sh', '-c', cli + ' ']);
         childs.append(newProc)
-        #time.sleep(1)
+        time.sleep(1)
 
     subprocess.os.wait()
     result=monitorChilds(childs)

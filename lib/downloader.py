@@ -30,7 +30,7 @@ maxDwnFilesPerItem  =int(config.ini.get(APPID,'maxDwnFilesPerItem'))
 repFolder           =config.ini.get(APPID,'repository').replace('$PRJ',prjFolder)
 maxBandwidth        =config.ini.get(APPID,'maxBandwidth')
 sleepTimeBetweenFileDownload =int(config.ini.get(APPID,'sleepTimeBetweenFileDownload'))
-
+performDownload     =True
 childs=list()
 
 def monitorChilds(processList):
@@ -55,6 +55,7 @@ def monitorChilds(processList):
 
 logFile =open('downloader.log','a')
 logFile.write('\n\n'+'*'.center(80,'*') + '\n\n\n\n')
+logcmd =open('download-commands.log','a')
 
 def log(logtext):
     #print datetime.datetime.now().isoformat()+' ' + logtext
@@ -111,17 +112,20 @@ def main():
         targetFolder=os.path.split(targetFilename)[0]
         if not os.path.exists(targetFolder):
             os.makedirs(targetFolder)
+            logcmd.write('mkdir -p %s \n' % targetFolder)
         cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
         cmd=cmd.replace('$USER',username)
         cmd=cmd.replace('$PASS',password)
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
         #temporary network patch
-        if True:
+        if False:
             cmd=cmd.replace('s1-pac1dmz-oda-v-20.sentinel1.eo.esa.int:80','localhost:14002')
             print cmd
         log(cmd)
-        newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
-        childs.append(newProc)
+        logcmd.write(cmd+'\n')
+        if performDownload:
+            newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
+            childs.append(newProc)
         #time.sleep(1)
     exit_codes = [p.wait() for p in childs]
     print exit_codes
@@ -134,5 +138,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Download the first item in the queue")
     parser.add_argument("--test", action="store_true", dest="test",   help="self test")
+    parser.add_argument("--nodownload", action="store_true", dest="nodownload",   help="self test")
     args=parser.parse_args()
+    if args.nodownload:
+        performDownload=False
     main()
