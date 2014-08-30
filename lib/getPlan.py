@@ -168,6 +168,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Query for a download plan and add to the queue")
     parser.add_argument("--target", dest="target", help="target system to be contacted")
+    parser.add_argument("--fromfile", dest="fromfile", help="add products parsing a file")
     parser.add_argument("--singleproduct", dest="productId", help="add a single product in the queue")
     parser.add_argument("--clean", action="store_true", dest="clean",   help="clean queue")
     parser.add_argument("--test", action="store_true", dest="test",   help="self test")
@@ -188,8 +189,17 @@ if __name__ == "__main__":
         if args.productId:
             #specific product request
             addSingleODAProduct(args.productId)
-        else:
-            #no single product request; get full available plan
-            main(args.target)
+            sys.exit()
+        if args.fromfile:
+            #get list from file
+            prods=open(args.fromfile).readlines()
+            for prod in prods:
+                prodid=prod.replace('\n','')
+                if 'SAFE' not in prodid:
+                    prodid+='.SAFE'
+                addSingleODAProduct(prodid)
+            sys.exit()
+        #no specific request; get full available plan
+        main(args.target)
         sys.exit()
     print "No valid argument found; try -h."
