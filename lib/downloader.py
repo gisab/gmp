@@ -74,7 +74,7 @@ def main():
     x=libQueue.queue()
     #resetDownloadQueue for debug purposes
     #x.resetDownloadQueue()
-    y=x.getItem(str(os.getpid()))
+    y=x.getItemForDownload(str(os.getpid()))
     if y=='#':
         #no record found
         return
@@ -129,7 +129,7 @@ def main():
         #time.sleep(1)
     exit_codes = [p.wait() for p in childs]
     print exit_codes
-
+    y.setStatus(libQueue.cdwncompleted)
     #result=monitorChilds(childs)
     #pprint.pprint(result)
     
