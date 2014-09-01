@@ -135,6 +135,8 @@ def getPlugin(target):
 ##Add single product
 def addSingleODAProduct(productID):
     archive=getPlugin('oda')
+    if 'SAFE' not in productID:
+        productID+='.SAFE' 
     try:
         newItem=archive.createItem(productID)
     except:

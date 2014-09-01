@@ -25,6 +25,7 @@ import pprint
 import libQueue
 import dbif
 import time
+from lxml import etree
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -34,8 +35,15 @@ else:
     debug=False
 
 #global constant for queue workflow
-cnew   ='NEW'
-cdwn   ='DOWN'
+cnew          ='NEW'
+cdwn          ='DWNING'
+cdwnmeta      ='DWNMETA'
+cdwncompleted ='DWNFULL'
+cdwnverified  ='DWNOK'
+cfinalising   ='PARSING'
+cdone         ='DONE'
+
+rep           =config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
 
 class queue(object):
     def __init__(self,init='#'):
@@ -69,27 +77,55 @@ class queue(object):
             self.db.exe(iqry)
         pass
     
-    def getItem(self,pid):
-        #get and lock the first avaiable item in the list
-        qry="SELECT ID, STATUS FROM queue where STATUS='%s' order by LAST_UPDATE ASC limit 1;" % cnew
-        self.db.cur.execute(qry)
-        rec=self.db.cur.fetchone()
-        if rec==None:
-            #no record found
-            return "#"
-        nid=rec[0]
-        #lock the current record
-        qry="UPDATE queue SET status='%s', pid='%s' where ID='%s';" % (cdwn, pid, nid)
-        print qry
-        self.db.exe(qry)
-        #wait 1 second and check that the record is indeed locked
-        time.sleep(1)
-        qry="SELECT ID, PID FROM queue where id='%s' and pid='%s';" % (nid, pid)
-        self.db.cur.execute(qry)
-        rec=self.db.cur.fetchone()
-        if rec==None:
-            #no record found, i.e. the record has not been locked properly
-            return "#"
+    def getItemDownloaded(self,pid='#'):
+        if pid=='#':
+            #Download without lock a queued item for triggering the download
+            return self.getItem(fromStatus=(cdwnmeta,cdwncompleted,cdwnverified))
+        else:
+            #Download and lock a queued item for triggering the download
+            return self.getItem(lockpid=pid,fromStatus=(cdwnmeta,cdwncompleted,cdwnverified),toStatus=cfinalising)
+
+    def getItemForDownload(self,pid):
+        #Download and lock a queued item for triggering the download
+        return self.getItem(lockpid=pid,fromStatus=(cnew,),toStatus=cdwn)
+
+    def getItem(self,lockpid='#',fromStatus='#',toStatus='#'):
+        assert fromStatus!='#'
+        
+        if lockpid=='#':
+            #get withoud locking the first avaiable item in the list
+            fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
+            qry="SELECT ID, STATUS FROM queue where STATUS in (%s) order by LAST_UPDATE ASC limit 1;" % fromStatusCriteria
+            self.db.cur.execute(qry)
+            rec=self.db.cur.fetchone()
+            if rec==None:
+                #no record found
+                return "#"
+            nid=rec[0]
+        else:
+            #get and lock the first avaiable item in the list
+            fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
+            qry="SELECT ID, STATUS FROM queue where STATUS in (%s) and pid is null order by LAST_UPDATE ASC limit 1;" % fromStatusCriteria
+            self.db.cur.execute(qry)
+            rec=self.db.cur.fetchone()
+            if rec==None:
+                #no record found
+                return "#"
+            nid=rec[0]
+            #lock the current record
+            assert toStatus!='#'
+            qry="UPDATE queue SET status='%s', pid='%s' where ID='%s';" % (toStatus, lockpid, nid)
+            print qry
+            self.db.exe(qry)
+            #wait 1 second and check that the record is indeed locked by this running instance
+            time.sleep(1)
+            qry="SELECT ID, PID FROM queue where id='%s' and pid='%s';" % (nid, lockpid)
+            self.db.cur.execute(qry)
+            rec=self.db.cur.fetchone()
+            if rec==None:
+                #no record found, i.e. the record has not been locked properly
+                return "#"
+            self.db.connection.commit()
         #Prepare queuedItem object
         x=queuedItem(nid)
         return x
@@ -104,11 +140,15 @@ class queue(object):
         pprint.pprint(self.queue)
         pass
     
+    def cleanpid(self):
+        qry="UPDATE queue SET pid=Null;"
+        print qry
+        self.db.exe(qry)
 
 class queuedItem(object):
+    ##Constructor
     def __init__(self, itemID):
-        self.db=dbif.gencur('SELECT * FROM queue')
-        #get and lock the first avaiable item in the list
+        self.db=dbif.gencur("select 'none';")
         qry="SELECT ID, STATUS, pid, agentid, targetid, LAST_UPDATE FROM queue where ID='%s';" % itemID
         self.db.cur.execute(qry)
         rec=self.db.cur.fetchone()
@@ -147,6 +187,69 @@ class queuedItem(object):
             x['url']      =i[2]
             self.files.append(x)
         return
+    
+    ## Destructor
+    def __del__(self):
+        self.unlock()
+        pass
+
+    ##Set new status for the object
+    def setStatus(self,newStatus):
+        qry="UPDATE queue set STATUS='%s' where ID='%s';" % (newStatus, self.id)
+        self.db.exe(qry)
+        self.status=newStatus
+        pass
+
+    ##Clean pid attribute, i.e. unlock
+    def unlock(self):
+        qry="UPDATE queue set pid=Null where ID='%s';" % str(self.id)
+        self.db.exe(qry)
+        pass
+    
+    ## Search for the manifest and create file and xml handlers
+    def openManifest(self):
+        if self.targetid=='oda':
+            for i in self.files:
+                if 'manifest' in i['filename'].lower():
+                    print 'manifest: %s' % i['filename']
+                    manifest=i['filename']
+                    self.manifestPath=rep+manifest
+                    self.manifestParser=etree.fromstring(open(self.manifestPath).read())
+                    return 
+
+    ## Search for the manifest and create file and xml handlers
+    def parseManifest(self):
+        if self.manifestParser:
+            self.coordinatesKML=self.manifestParser.find('.//{http://www.opengis.net/gml}coordinates').text
+            #Translate from KML in WKT
+            tmp=self.coordinatesKML.replace(',','/').replace(' ',',').replace('/',' ')
+            firstpoint=tmp.split(',')[0]
+            self.coordinatesWKT='POLYGON ((' + tmp +',' + firstpoint+ '))'
+
+    def addTag(self,newtag):
+        qry="SELECT tags FROM queue where ID='%s';" % str(self.id)
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchone()
+        if rec[0]==None:
+            newfield=newtag
+        else:
+            self.tags=rec[0].split(',')
+            self.tags.append(newtag)
+            newfield=','.join(sorted(self.tags))
+        qry="UPDATE queue set tags='%s' where ID='%s';" % (newfield,str(self.id))
+        self.db.exe(qry)
+        pass
+
+    def delTag(self,newtag):
+        #qry="UPDATE queue set pid=Null where ID='%s';" % str(self.id)
+        #self.db.cur.execute(qry)
+        pass
+
+    def cleanTag(self):
+        qry="UPDATE queue set tags=Null where ID='%s';" % str(self.id)
+        self.db.cur.execute(qry)
+        self.tags=list()
+        pass
 
 class newItem(object):
     def __init__(self):
