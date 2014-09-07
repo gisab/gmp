@@ -61,6 +61,17 @@ class queue(object):
     def addItem(self,newItemObj):
         #check that newItem is instance of newItem
         assert isinstance(newItemObj, newItem)
+
+        #Insert record into PRODUCT table
+        qry="INSERT INTO product (id) values ('%s', GeomFromText('POINT(0 0)'));" % (newItemObj.ID)
+        if debug:
+            print qry
+        try:
+            self.db.exe(qry)
+        except:
+            print "Product already exists; maybe it comes from other sources"
+        
+        #Insert record into QUEUE table
         if hasattr(newItemObj,'forcedStatus'):
             newStatus=newItemObj.forcedStatus
         else:
@@ -69,6 +80,8 @@ class queue(object):
         if debug:
             print qry
         self.db.exe(qry)
+        
+        #Insert records into FILES table
         qry="INSERT INTO files (qid, filename, url) values ('%s', '%s', '%s');"
         for i in newItemObj.files:
             iqry=qry % (newItemObj.ID, i['filename'], i['url'])
@@ -208,6 +221,18 @@ class queuedItem(object):
     
     ## Search for the manifest and create file and xml handlers
     def openManifest(self):
+        if self.targetid=='dhus':
+            #open zipfile
+            import zipfile
+            archive = zipfile.ZipFile(rep+self.files[0]['filename'], 'r')
+            for i in archive.namelist():
+                if 'manifest' in i.lower():
+                    filename =i
+                    manifest = archive.read(i)
+                    self.manifestPath=rep+filename
+                    self.manifestParser=etree.fromstring(manifest)
+                    break
+            return
         if self.targetid=='oda':
             for i in self.files:
                 if 'manifest' in i['filename'].lower():
@@ -219,12 +244,14 @@ class queuedItem(object):
 
     ## Search for the manifest and create file and xml handlers
     def parseManifest(self):
-        if self.manifestParser:
+        #if self.manifestParser:
+        if hasattr(self,'manifestParser'):
             self.coordinatesKML=self.manifestParser.find('.//{http://www.opengis.net/gml}coordinates').text
             #Translate from KML in WKT
-            tmp=self.coordinatesKML.replace(',','/').replace(' ',',').replace('/',' ')
-            firstpoint=tmp.split(',')[0]
-            self.coordinatesWKT='POLYGON ((' + tmp +',' + firstpoint+ '))'
+            #tmp=self.coordinatesKML.replace(',','/').replace(' ',',').replace('/',' ')
+            #firstpoint=tmp.split(',')[0]
+            #self.coordinatesWKT='POLYGON ((' + tmp +',' + firstpoint+ '))'
+            self.coordinatesWKT=gml2wkt(self.coordinatesKML)
 
     def addTag(self,newtag):
         qry="SELECT tags FROM queue where ID='%s';" % str(self.id)
@@ -234,6 +261,9 @@ class queuedItem(object):
             newfield=newtag
         else:
             self.tags=rec[0].split(',')
+            if newtag in self.tags:
+                #tag already existing; skipping tag update
+                return
             self.tags.append(newtag)
             newfield=','.join(sorted(self.tags))
         qry="UPDATE queue set tags='%s' where ID='%s';" % (newfield,str(self.id))
@@ -281,3 +311,23 @@ class newItem(object):
         if desc!="#":
             x['desc']=desc
         self.files.append(x)
+
+def gml2wkt(gml):
+    tmp=gml.replace(',','/').replace(' ',',').replace('/',' ')
+    firstpoint=tmp.split(',')[0]
+    wkt='POLYGON ((' + tmp +',' + firstpoint+ '))'
+    return wkt
+
+def gml2wkt_swap(gml):
+    wkt='POLYGON ((' 
+    xylist=gml.split(' ')
+    for p in xylist:
+        x=p.split(',')[0]
+        y=p.split(',')[1]
+        wkt+=y+' '+x+','
+    #add first point as last
+    p=xylist[0]
+    x=p.split(',')[0]
+    y=p.split(',')[1]
+    wkt+=y+' '+x+'))'
+    return wkt
