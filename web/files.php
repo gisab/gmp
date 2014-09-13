@@ -53,6 +53,9 @@
             $field = new StringField('url');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
+            $field = new StringField('status');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
             $this->dataset->AddLookupField('qid', 'queue', new StringField('id'), new StringField('note', 'qid_note', 'qid_note_queue'), 'qid_note_queue');
         }
     
@@ -77,6 +80,8 @@
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files')));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent')));
+            if (GetCurrentUserGrantForDataSource('product')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Product'), 'product.php', $this->RenderText('Product'), $currentPageCaption == $this->RenderText('Product')));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() )
               $result->AddPage(new PageLink($this->GetLocalizerCaptions()->GetMessageString('AdminPage'), 'phpgen_admin.php', $this->GetLocalizerCaptions()->GetMessageString('AdminPage'), false, true));
@@ -132,13 +137,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateLookupSearchInput('qid', $this->RenderText('Qid'), $lookupDataset, 'id', 'note', false));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('filename', $this->RenderText('Filename')));
@@ -220,13 +228,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
             $editColumn = new LookUpEditColumn(
@@ -262,13 +273,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
             $editColumn = new LookUpEditColumn(
@@ -416,13 +430,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
             $editColumn = new LookUpEditColumn(
@@ -479,13 +496,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
             $editColumn = new LookUpEditColumn(
@@ -698,13 +718,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
             $editColumn = new LookUpEditColumn(
@@ -740,13 +763,16 @@
             $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $lookupDataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('tags');
+            $lookupDataset->AddField($field, false);
+            $field = new StringField('footprint');
             $lookupDataset->AddField($field, false);
             $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
             $editColumn = new LookUpEditColumn(

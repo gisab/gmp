@@ -37,13 +37,14 @@ function GetPageInfos()
     $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue');
     $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files');
     $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent');
+    $result[] = array('caption' => 'Product', 'short_caption' => 'Product', 'filename' => 'product.php', 'name' => 'product');
     return $result;
 }
 
 function GetPagesHeader()
 {
     return
-    '<h2>Copernicus Download Manager</h2>';
+    '<h2>Download and Catalogue Manager</h2>';
 }
 
 function GetPagesFooter()

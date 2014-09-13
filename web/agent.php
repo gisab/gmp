@@ -70,6 +70,8 @@
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files')));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent')));
+            if (GetCurrentUserGrantForDataSource('product')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Product'), 'product.php', $this->RenderText('Product'), $currentPageCaption == $this->RenderText('Product')));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() )
               $result->AddPage(new PageLink($this->GetLocalizerCaptions()->GetMessageString('AdminPage'), 'phpgen_admin.php', $this->GetLocalizerCaptions()->GetMessageString('AdminPage'), false, true));

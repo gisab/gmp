@@ -53,6 +53,9 @@
             $field = new StringField('url');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
+            $field = new StringField('status');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
         }
     
         protected function AddFieldColumns(Grid $grid)
@@ -259,6 +262,9 @@
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
             $field = new StringField('url');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('status');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
         }
@@ -754,13 +760,16 @@
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
             $field = new StringField('pid');
-            $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
             $field = new StringField('agentid');
-            $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
             $field = new StringField('targetid');
-            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('footprintwkt');
+            $this->dataset->AddField($field, false);
+            $field = new StringField('tags');
+            $this->dataset->AddField($field, false);
+            $field = new StringField('footprint');
             $this->dataset->AddField($field, false);
         }
     
@@ -785,6 +794,8 @@
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files')));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent')));
+            if (GetCurrentUserGrantForDataSource('product')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Product'), 'product.php', $this->RenderText('Product'), $currentPageCaption == $this->RenderText('Product')));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() )
               $result->AddPage(new PageLink($this->GetLocalizerCaptions()->GetMessageString('AdminPage'), 'phpgen_admin.php', $this->GetLocalizerCaptions()->GetMessageString('AdminPage'), false, true));
