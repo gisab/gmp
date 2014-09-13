@@ -89,6 +89,8 @@ def main():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     for ifile in y.files:
+        if ifile['status']!=libQueue.cfileQueued:
+            continue
         newid=str(ifile['fileid'])
         currMonitor=monitorChilds(childs)
         #wait for a free resource
@@ -118,7 +120,7 @@ def main():
         cmd=cmd.replace('$PASS',password)
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
         #temporary network patch
-        if False:
+        if True:
             cmd=cmd.replace('s1-pac1dmz-oda-v-20.sentinel1.eo.esa.int:80','localhost:14002')
             print cmd
         log(cmd)
