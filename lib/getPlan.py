@@ -121,17 +121,6 @@ def selftest():
     x.dump()
     
 
-def getPlugin(target):
-    if target=='dhus':
-        import pluginDhus
-        x=pluginDhus.gmpPluginDhus()
-        return x
-    if target=='oda':
-        import pluginOda
-        x=pluginOda.gmpPluginOda()
-        return x
-    return
-
 ##Add single product
 def addSingleODAProduct(productID):
     archive=getPlugin('oda')
@@ -153,17 +142,8 @@ def addSingleODAProduct(productID):
 ## Main function
 def main(target):
     archive=getPlugin(target)
-    plan=archive.downloadPlan()
-    x=libQueue.queue()
-    i=0
-    for plannedItem in plan:
-        i+=1
-        if i>5:
-            return
-        try:
-            x.addItem(plannedItem)
-        except:
-            print "Failed to import product %s" % plannedItem.ID
+    archive.downloadPlan() #plan will be in archive.plan
+    archive.storePlan()
 
 if __name__ == "__main__":
     #Processing arguments from command line
