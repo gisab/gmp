@@ -40,7 +40,7 @@ def log(logtext):
 
 ## finalise the first item in the queue
 def main():
-    #Get the first available item to be downloaded
+    #Get the first available item that is downloaded
     x=libQueue.queue()
     #resetDownloadQueue for debug purposes
     #x.resetDownloadQueue()
@@ -59,7 +59,8 @@ def main():
 
     #y.setStatus(libQueue.cdone)
     #debug
-    tmp=libQueue.cdwncompleted
+    tmp=libQueue.cdone
+    #tmp=libQueue.cdwncompleted
     y.setStatus(tmp)
     
 if __name__ == "__main__":
