@@ -18,7 +18,7 @@ SystemUtils::SetTimeZoneIfNeed('Europe/Belgrade');
 function GetGlobalConnectionOptions()
 {
     return array(
-  'server' => '192.168.56.1',
+  'server' => '127.0.0.1',
   'port' => '8889',
   'username' => 'admin',
   'password' => 'admin',
@@ -34,17 +34,18 @@ function HasAdminPage()
 function GetPageInfos()
 {
     $result = array();
+    $result[] = array('caption' => 'Product', 'short_caption' => 'Product Catalogue', 'filename' => 'product.php', 'name' => 'test');
     $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue');
     $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files');
     $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent');
-    $result[] = array('caption' => 'Product', 'short_caption' => 'Product', 'filename' => 'product.php', 'name' => 'product');
     return $result;
 }
 
 function GetPagesHeader()
 {
     return
-    '<h2>Download and Catalogue Manager</h2>';
+    '<h2>Get My Products</h2>
+<h3><i>> Download and Catalogue Sentinels Imagery</i></h3>';
 }
 
 function GetPagesFooter()

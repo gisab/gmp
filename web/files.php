@@ -64,7 +64,7 @@
             $result = new CompositePageNavigator($this);
             
             $partitionNavigator = new PageNavigator('pnav', $this, $this->dataset);
-            $partitionNavigator->SetRowsPerPage(20);
+            $partitionNavigator->SetRowsPerPage(50);
             $result->AddPageNavigator($partitionNavigator);
             
             return $result;
@@ -74,14 +74,14 @@
         {
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
+            if (GetCurrentUserGrantForDataSource('test')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Product'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product')));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue')));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files')));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent')));
-            if (GetCurrentUserGrantForDataSource('product')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Product'), 'product.php', $this->RenderText('Product'), $currentPageCaption == $this->RenderText('Product')));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() )
               $result->AddPage(new PageLink($this->GetLocalizerCaptions()->GetMessageString('AdminPage'), 'phpgen_admin.php', $this->GetLocalizerCaptions()->GetMessageString('AdminPage'), false, true));
@@ -97,7 +97,7 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('filesssearch', $this->dataset,
-                array('id', 'qid_note', 'filename', 'url'),
+                array('id', 'qid', 'filename', 'url'),
                 array($this->RenderText('Id'), $this->RenderText('Qid'), $this->RenderText('Filename'), $this->RenderText('Url')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
@@ -119,72 +119,14 @@
             $this->AdvancedSearchControl = new AdvancedSearchControl('filesasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
             $this->AdvancedSearchControl->setTimerInterval(1000);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
-            
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateLookupSearchInput('qid', $this->RenderText('Qid'), $lookupDataset, 'id', 'note', false));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('qid', $this->RenderText('Qid')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('filename', $this->RenderText('Filename')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('url', $this->RenderText('Url')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
         {
-            $actionsBandName = 'actions';
-            $grid->AddBandToBegin($actionsBandName, $this->GetLocalizerCaptions()->GetMessageString('Actions'), true);
-            if ($this->GetSecurityInfo()->HasViewGrant())
-            {
-                $column = new RowOperationByLinkColumn($this->GetLocalizerCaptions()->GetMessageString('View'), OPERATION_VIEW, $this->dataset);
-                $grid->AddViewColumn($column, $actionsBandName);
-                $column->SetImagePath('images/view_action.png');
-            }
-            if ($this->GetSecurityInfo()->HasEditGrant())
-            {
-                $column = new RowOperationByLinkColumn($this->GetLocalizerCaptions()->GetMessageString('Edit'), OPERATION_EDIT, $this->dataset);
-                $grid->AddViewColumn($column, $actionsBandName);
-                $column->SetImagePath('images/edit_action.png');
-                $column->OnShow->AddListener('ShowEditButtonHandler', $this);
-            }
-            if ($this->GetSecurityInfo()->HasDeleteGrant())
-            {
-                $column = new RowOperationByLinkColumn($this->GetLocalizerCaptions()->GetMessageString('Delete'), OPERATION_DELETE, $this->dataset);
-                $grid->AddViewColumn($column, $actionsBandName);
-                $column->SetImagePath('images/delete_action.png');
-                $column->OnShow->AddListener('ShowDeleteButtonHandler', $this);
-            $column->SetAdditionalAttribute("data-modal-delete", "true");
-            $column->SetAdditionalAttribute("data-delete-handler-name", $this->GetModalGridDeleteHandler());
-            }
-            if ($this->GetSecurityInfo()->HasAddGrant())
-            {
-                $column = new RowOperationByLinkColumn($this->GetLocalizerCaptions()->GetMessageString('Copy'), OPERATION_COPY, $this->dataset);
-                $grid->AddViewColumn($column, $actionsBandName);
-                $column->SetImagePath('images/copy_action.png');
-            }
+    
         }
     
         protected function AddFieldColumns(Grid $grid)
@@ -199,52 +141,19 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for note field
+            // View column for qid field
             //
-            $column = new TextViewColumn('qid_note', 'Qid', $this->dataset);
+            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
             $column->SetOrderable(true);
             $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('note_handler');
+            $column->SetFullTextWindowHandlerName('qid_handler');
             
             /* <inline edit column> */
             //
             // Edit column for qid field
             //
             $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
-            $editColumn = new LookUpEditColumn(
-                'Qid', 
-                'qid', 
-                $editor, 
-                $this->dataset, 'id', 'note', $lookupDataset);
+            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -256,40 +165,7 @@
             // Edit column for qid field
             //
             $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
-            $editColumn = new LookUpEditColumn(
-                'Qid', 
-                'qid', 
-                $editor, 
-                $this->dataset, 'id', 'note', $lookupDataset);
+            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -380,12 +256,12 @@
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for note field
+            // View column for qid field
             //
-            $column = new TextViewColumn('qid_note', 'Qid', $this->dataset);
+            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
             $column->SetOrderable(true);
             $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('note_handler');
+            $column->SetFullTextWindowHandlerName('qid_handler');
             $grid->AddSingleRecordViewColumn($column);
             
             //
@@ -413,40 +289,7 @@
             // Edit column for qid field
             //
             $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
-            $editColumn = new LookUpEditColumn(
-                'Qid', 
-                'qid', 
-                $editor, 
-                $this->dataset, 'id', 'note', $lookupDataset);
+            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -479,40 +322,7 @@
             // Edit column for qid field
             //
             $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
-            $editColumn = new LookUpEditColumn(
-                'Qid', 
-                'qid', 
-                $editor, 
-                $this->dataset, 'id', 'note', $lookupDataset);
+            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -539,7 +349,7 @@
             $grid->AddInsertColumn($editColumn);
             if ($this->GetSecurityInfo()->HasAddGrant())
             {
-                $grid->SetShowAddButton(true);
+                $grid->SetShowAddButton(false);
                 $grid->SetShowInlineAddButton(false);
             }
             else
@@ -631,25 +441,12 @@
         {
             return ;
         }
-        public function ShowEditButtonHandler(&$show)
-        {
-            if ($this->GetRecordPermission() != null)
-                $show = $this->GetRecordPermission()->HasEditGrant($this->GetDataset());
-        }
-        public function ShowDeleteButtonHandler(&$show)
-        {
-            if ($this->GetRecordPermission() != null)
-                $show = $this->GetRecordPermission()->HasDeleteGrant($this->GetDataset());
-        }
-        
-        public function GetModalGridDeleteHandler() { return 'files_modal_delete'; }
-        protected function GetEnableModalGridDelete() { return true; }
     
         protected function CreateGrid()
         {
             $result = new Grid($this, $this->dataset, 'filesGrid');
             if ($this->GetSecurityInfo()->HasDeleteGrant())
-               $result->SetAllowDeleteSelected(true);
+               $result->SetAllowDeleteSelected(false);
             else
                $result->SetAllowDeleteSelected(false);   
             
@@ -673,7 +470,7 @@
             $this->AddExportColumns($result);
     
             $this->SetShowPageList(true);
-            $this->SetHidePageListByDefault(true);
+            $this->SetHidePageListByDefault(false);
             $this->SetExportToExcelAvailable(true);
             $this->SetExportToWordAvailable(true);
             $this->SetExportToXmlAvailable(true);
@@ -691,9 +488,9 @@
             // Http Handlers
             //
             //
-            // View column for note field
+            // View column for qid field
             //
-            $column = new TextViewColumn('qid_note', 'Qid', $this->dataset);
+            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
             $column->SetOrderable(true);
             
             /* <inline edit column> */
@@ -701,40 +498,7 @@
             // Edit column for qid field
             //
             $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
-            $editColumn = new LookUpEditColumn(
-                'Qid', 
-                'qid', 
-                $editor, 
-                $this->dataset, 'id', 'note', $lookupDataset);
+            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -746,46 +510,13 @@
             // Edit column for qid field
             //
             $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $lookupDataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`queue`');
-            $field = new StringField('id');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, true);
-            $field = new StringField('note');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('status');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('pid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('agentid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprintwkt');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('tags');
-            $lookupDataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $lookupDataset->AddField($field, false);
-            $lookupDataset->SetOrderBy('note', GetOrderTypeAsSQL(otAscending));
-            $editColumn = new LookUpEditColumn(
-                'Qid', 
-                'qid', 
-                $editor, 
-                $this->dataset, 'id', 'note', $lookupDataset);
+            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $column->SetInsertOperationColumn($editColumn);
             /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'note_handler', $column);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'qid_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);
             //
             // View column for filename field
@@ -849,11 +580,11 @@
             /* </inline insert column> */
             $handler = new ShowTextBlobHandler($this->dataset, $this, 'url_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);//
-            // View column for note field
+            // View column for qid field
             //
-            $column = new TextViewColumn('qid_note', 'Qid', $this->dataset);
+            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
             $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'note_handler', $column);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'qid_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);
             //
             // View column for filename field
