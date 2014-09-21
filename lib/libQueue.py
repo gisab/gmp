@@ -199,7 +199,6 @@ class queue(object):
                 y.close()
                 somethingProcessed=True
             except:
-                y.close()
                 traceback.print_exc(file=sys.stdout)
                 pass
             y=None
@@ -248,7 +247,7 @@ class queue(object):
                 #no record found
                 break
             try:
-                y.catalogue()
+                y.product.catalogue()
                 y.close()
                 somethingProcessed=True
             except:
@@ -385,15 +384,6 @@ class queuedItem(object):
         qry="UPDATE product set kml='%s', wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (kmlbody, self.coordinatesWKT, self.coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
-    
-    def catalogue(self):
-        wkt=self.product.wkt
-        qry="SELECT id,`name`, AsText(geom) FROM country WHERE MBRContains(GeomFromText('%s'),geom);" % wkt
-        db=dbif.gencur(qry)
-        res=db.cur.fetchall()
-        for icountry in res:
-            print "adding tag %s" % icountry[1]
-            self.product.addTag(icountry[1])
     
     def close(self):
         assert self.closeStatus!='#'
