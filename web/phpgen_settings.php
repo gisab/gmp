@@ -18,11 +18,11 @@ SystemUtils::SetTimeZoneIfNeed('Europe/Belgrade');
 function GetGlobalConnectionOptions()
 {
     return array(
-  'server' => '127.0.0.1',
+  'server' => '192.168.56.1',
   'port' => '8889',
   'username' => 'admin',
   'password' => 'admin',
-  'database' => 'gmp'
+  'database' => 'gmp2'
 );
 }
 

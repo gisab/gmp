@@ -53,8 +53,13 @@
             $field = new StringField('url');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('status');
+            $field = new StringField('dwnstatus');
             $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new DateTimeField('LAST_UPDATE');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('targetid');
             $this->dataset->AddField($field, false);
         }
     
@@ -264,8 +269,13 @@
             $field = new StringField('url');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('status');
+            $field = new StringField('dwnstatus');
             $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new DateTimeField('LAST_UPDATE');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('targetid');
             $this->dataset->AddField($field, false);
         }
     
@@ -722,12 +732,16 @@
             $field = new StringField('agentid');
             $this->dataset->AddField($field, false);
             $field = new StringField('targetid');
-            $this->dataset->AddField($field, false);
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, true);
             $field = new StringField('footprintwkt');
             $this->dataset->AddField($field, false);
             $field = new StringField('tags');
             $this->dataset->AddField($field, false);
             $field = new StringField('footprint');
+            $this->dataset->AddField($field, false);
+            $field = new StringField('dwnstatus');
+            $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
         }
     
@@ -776,8 +790,8 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('queuessearch', $this->dataset,
-                array('id', 'note', 'status', 'pid', 'agentid', 'targetid', 'LAST_UPDATE'),
-                array($this->RenderText('Id'), $this->RenderText('Note'), $this->RenderText('Status'), $this->RenderText('Pid'), $this->RenderText('Agentid'), $this->RenderText('Targetid'), $this->RenderText('LAST UPDATE')),
+                array('id', 'note', 'status', 'pid', 'agentid', 'targetid', 'LAST_UPDATE', 'dwnstatus'),
+                array($this->RenderText('Id'), $this->RenderText('Note'), $this->RenderText('Status'), $this->RenderText('Pid'), $this->RenderText('Agentid'), $this->RenderText('Targetid'), $this->RenderText('LAST UPDATE'), $this->RenderText('Dwnstatus')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -804,6 +818,7 @@
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('agentid', $this->RenderText('Agentid')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('targetid', $this->RenderText('Targetid')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateDateTimeSearchInput('LAST_UPDATE', $this->RenderText('LAST UPDATE')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('dwnstatus', $this->RenderText('Dwnstatus')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -1074,6 +1089,45 @@
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
+            
+            //
+            // View column for dwnstatus field
+            //
+            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
+            $column->SetOrderable(true);
+            
+            /* <inline edit column> */
+            //
+            // Edit column for dwnstatus field
+            //
+            $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editor->AddValue('C', $this->RenderText('C'));
+            $editor->AddValue('Q', $this->RenderText('Q'));
+            $editColumn = new CustomEditColumn('Dwnstatus', 'dwnstatus', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
+            
+            /* <inline insert column> */
+            //
+            // Edit column for dwnstatus field
+            //
+            $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editor->AddValue('C', $this->RenderText('C'));
+            $editor->AddValue('Q', $this->RenderText('Q'));
+            $editColumn = new CustomEditColumn('Dwnstatus', 'dwnstatus', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetInsertOperationColumn($editColumn);
+            /* </inline insert column> */
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
         }
     
         protected function AddSingleRecordViewColumns(Grid $grid)
@@ -1129,6 +1183,13 @@
             //
             $column = new DateTimeViewColumn('LAST_UPDATE', 'LAST UPDATE', $this->dataset);
             $column->SetDateTimeFormat('Y-m-d H:i:s');
+            $column->SetOrderable(true);
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for dwnstatus field
+            //
+            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
         }
@@ -1208,6 +1269,19 @@
             //
             $editor = new DateTimeEdit('last_update_edit', true, 'Y-m-d H:i:s', GetFirstDayOfWeek());
             $editColumn = new CustomEditColumn('LAST UPDATE', 'LAST_UPDATE', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddEditColumn($editColumn);
+            
+            //
+            // Edit column for dwnstatus field
+            //
+            $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editor->AddValue('C', $this->RenderText('C'));
+            $editor->AddValue('Q', $this->RenderText('Q'));
+            $editColumn = new CustomEditColumn('Dwnstatus', 'dwnstatus', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -1294,6 +1368,19 @@
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for dwnstatus field
+            //
+            $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editor->AddValue('C', $this->RenderText('C'));
+            $editor->AddValue('Q', $this->RenderText('Q'));
+            $editColumn = new CustomEditColumn('Dwnstatus', 'dwnstatus', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
             if ($this->GetSecurityInfo()->HasAddGrant())
             {
                 $grid->SetShowAddButton(false);
@@ -1357,6 +1444,13 @@
             $column->SetDateTimeFormat('Y-m-d H:i:s');
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
+            
+            //
+            // View column for dwnstatus field
+            //
+            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddPrintColumn($column);
         }
     
         protected function AddExportColumns(Grid $grid)
@@ -1410,6 +1504,13 @@
             $column->SetDateTimeFormat('Y-m-d H:i:s');
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
+            
+            //
+            // View column for dwnstatus field
+            //
+            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddExportColumn($column);
         }
     
         public function GetPageDirection()
@@ -1427,6 +1528,7 @@
         {
             $result = new Grid($this, $this->dataset, 'MasterDetailRecordGridForfilesDetailEdit0queue');
             $result->SetAllowDeleteSelected(false);
+            $result->OnCustomRenderColumn->AddListener('MasterDetailRecordGridForfilesDetailEdit0queue' . '_' . 'OnCustomRenderColumn', $this);
             $result->SetShowFilterBuilder(false);
             $result->SetAdvancedSearchAvailable(false);
             $result->SetFilterRowAvailable(false);
@@ -1502,6 +1604,15 @@
             $result->AddViewColumn($column);
             
             //
+            // View column for dwnstatus field
+            //
+            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $result->AddViewColumn($column);
+            
+            //
             // View column for id field
             //
             $column = new TextViewColumn('id', 'Id', $this->dataset);
@@ -1551,7 +1662,42 @@
             $column->SetOrderable(true);
             $result->AddPrintColumn($column);
             
+            //
+            // View column for dwnstatus field
+            //
+            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
+            $column->SetOrderable(true);
+            $result->AddPrintColumn($column);
+            
             return $result;
+        }
+        
+        function MasterDetailRecordGridForfilesDetailEdit0queue_OnCustomRenderColumn($fieldName, $fieldData, $rowData, &$customText, &$handled)
+        {
+            if ($fieldName == 'dwnstatus')
+            {
+                $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
+                $customText .= 
+                '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
+                    ($fieldData == Q ? 'Queued' : 'None') . 
+                '</span>';
+                if ($fieldData == N) {
+                $customText .= 
+                '<button onclick="' . 
+                    "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
+                    "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');"  .
+                    "$.getJSON(
+                    'queue_status.php?id=" . $rowData['id'] . 
+                        "&dwnstatus=Q', " . 
+                    "function(data) { " . 
+                        "dwnstatusValue.html(data.dwnstatus);" . 
+                        "dwnstatusCaption.html(data.dwnstatus == 1)" . 
+                    "});" . 
+                    "return false;". 
+                '">Queue</button>';
+                }
+                $handled = true;
+            }
         }
         
         function GetCustomClientScript()
@@ -1562,6 +1708,33 @@
         function GetOnPageLoadedClientScript()
         {
             return ;
+        }
+        function queueGrid_OnCustomRenderColumn($fieldName, $fieldData, $rowData, &$customText, &$handled)
+        {
+            if ($fieldName == 'dwnstatus')
+            {
+                $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
+                $customText .= 
+                '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
+                    ($fieldData == Q ? 'Queued' : 'None') . 
+                '</span>';
+                if ($fieldData == N) {
+                $customText .= 
+                '<button onclick="' . 
+                    "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
+                    "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');"  .
+                    "$.getJSON(
+                    'queue_status.php?id=" . $rowData['id'] . 
+                        "&dwnstatus=Q', " . 
+                    "function(data) { " . 
+                        "dwnstatusValue.html(data.dwnstatus);" . 
+                        "dwnstatusCaption.html(data.dwnstatus == 1)" . 
+                    "});" . 
+                    "return false;". 
+                '">Queue</button>';
+                }
+                $handled = true;
+            }
         }
         function partition_OnGetPartitions(&$partitions)
         {
@@ -1597,6 +1770,7 @@
             
             $result->SetHighlightRowAtHover(false);
             $result->SetWidth('');
+            $result->OnCustomRenderColumn->AddListener('queueGrid' . '_' . 'OnCustomRenderColumn', $this);
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
             $this->AddOperationsColumns($result);

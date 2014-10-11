@@ -53,8 +53,13 @@
             $field = new StringField('url');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('status');
+            $field = new StringField('dwnstatus');
             $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new DateTimeField('LAST_UPDATE');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('targetid');
             $this->dataset->AddField($field, false);
             $this->dataset->AddLookupField('qid', 'queue', new StringField('id'), new StringField('note', 'qid_note', 'qid_note_queue'), 'qid_note_queue');
         }

@@ -4,7 +4,13 @@
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script> 
     <script type="text/javascript" src="js/polygon.min.js"></script>
     <script type="text/javascript" src="js/gisab.js"></script>
-
+<!--
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="js/jquery.datetimepicker.css">
+    <script type="text/javascript" src="js/jquery.datetimepicker.js"></script>
+-->
+    
 <script type="text/javascript">
         $(function(){
          //create map
@@ -102,10 +108,19 @@
 	});	
 	</script>
 
-
       <input id="reset" value="Clear" type="button" class="navi"/>
       <input id="search" value="Search" type="button" class="navi"/>
       <input id="reload" value="Reload" type="button" class="navi"/>
+<!--
+      <script>
+      $(function() {
+        $('#datepickerfrom').datetimepicker({ dateFormat: "yy-mm-dd", timeFormat:  "HH:mm"});
+        $('#datepickerto').datetimepicker({ dateFormat: "yy-mm-dd", timeFormat:  "HH:mm"});
+      });
+      </script>
+      From: <input type="text" id="datepickerfrom">
+      To: <input type="text" id="datepickerto">
+-->
       <div id="map" style='border: 1px solid silver; height: 500px; width: 100%;'></div>
       <div id="out" style='border: 0px solid silver; font-size: 8pt; height: 30px; width: 100%;'></div>
 

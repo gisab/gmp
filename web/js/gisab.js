@@ -1,4 +1,16 @@
+/*
 
+###########################################################
+#                                                         #
+# Project: GMP                                            #
+# Author:  gianluca.sabella@gmail.com                     #
+#                                                         #
+# Module:  gisab.js                                       #
+# First version: 06/09/2014                               #
+#                                                         #
+###########################################################
+
+*/
 
 function parsePolyStrings(ps) {
     var i, j, lat, lng, tmp, tmpArr,
