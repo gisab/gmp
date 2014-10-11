@@ -17,6 +17,7 @@ currDir=os.path.realpath(__file__)
 prjFolder=currDir.split(prjName)[0]+prjName
 sys.path.append(prjFolder+'/lib')
 import libQueue
+import traceback
 
 class gmpPlugin(object):
     def __init__(self):
@@ -36,12 +37,11 @@ class gmpPlugin(object):
         i=0
         for plannedItem in self.plan:
             i+=1
-            if i>10:
-                return
             try:
                 x.addItem(plannedItem)
             except:
                 print "Failed to import product %s" % plannedItem.ID
+                traceback.print_exc(file=sys.stdout)
         return
     
     def getAllMetalinks(self):
@@ -62,6 +62,11 @@ def getPlugin(target):
         import pluginOda
         x=pluginOda.gmpPluginOda()
         return x
+    if target=='lfs':
+        import pluginLocalFS
+        x=pluginLocalFS.gmpPluginLFS()
+        return x
+    raise Exception('getPlugin', 'Target %s for product %s is unknown' % (target, queuedItem.id) )
     return
     
     
