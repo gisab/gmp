@@ -10,6 +10,8 @@
 #                                                         #
 ###########################################################
 
+prjName='gmp'
+
 import MySQLdb
 import config
 import sys,os,argparse
@@ -27,12 +29,25 @@ class gencur(object):
         cpwd   =config.ini.get('dbif','password')
         chost  =config.ini.get('dbif','host')
         cschema=config.ini.get('dbif','schema')
-        if chost=='localhost':
-            csocket=config.ini.get('dbif','socket')
-            self.connection = MySQLdb.connect(host='localhost',unix_socket = csocket, db=cschema,user=cuser,passwd = cpwd)
-        else:
-            cport  =int(config.ini.get('dbif','port'))
-            self.connection = MySQLdb.connect(host=chost,port=cport,db=cschema,user=cuser,passwd = cpwd)
+        try:
+            if chost=='localhost':
+                csocket=config.ini.get('dbif','socket')
+                self.connection = MySQLdb.connect(host='localhost',unix_socket = csocket,user=cuser,passwd = cpwd)
+            else:
+                cport  =int(config.ini.get('dbif','port'))
+                #self.connection = MySQLdb.connect(host=chost,port=cport,db=cschema,user=cuser,passwd = cpwd)
+                self.connection = MySQLdb.connect(host=chost,port=cport,user=cuser,passwd = cpwd)
+        except:
+            print "Error in connecting to mysql db; please check parameter in config.ini, section [dbif]"
+            raise
+        #check if db exist
+        try:
+            self.connection.cursor().execute("USE `%s`;" % cschema)
+        except:
+            print "Target DB does not esist; creating new schema %s" % cschema
+            self.connection.cursor().execute("CREATE DATABASE `%s`;" % cschema)
+            self.connection.cursor().execute("USE `%s`;" % cschema)
+            self.createdb()
         self.cur = self.connection.cursor()
         if sqlbody!="#":
             self.cur.execute(sqlbody)
@@ -40,7 +55,30 @@ class gencur(object):
     def exe(self,sqlbody):
         self.cur.execute(sqlbody)
         self.connection.commit()
-      
+    
+    def createdb(self):
+        import os
+        #getting directory
+        currDir=os.path.realpath(__file__)
+        prjFolder=currDir.split(prjName)[0]+prjName
+        dumpfiles=['gmp-schema.sql', 'gmp-tab.sql']
+        
+        cuser  =config.ini.get('dbif','user')
+        cpwd   =config.ini.get('dbif','password')
+        chost  =config.ini.get('dbif','host')
+        cschema=config.ini.get('dbif','schema')
+        cport  =int(config.ini.get('dbif','port'))
+        
+        for idump in dumpfiles:
+            ifile=prjFolder+'/db/'+idump
+            cli='mysql --user=%s --password=%s --host=%s --port=%s --database=%s < %s'
+            cli=cli % (cuser, cpwd, chost, cport, cschema, ifile)
+            try:
+                #print cli
+                os.system(cli)
+            except:
+                print"Error importing %s " % ifile
+                raise
 
 ## setObject Store an object into MySQL master db
 # @param iobj input object
@@ -57,26 +95,10 @@ def setObject(iobj,ttable,tcolumn,twhere):
     t.connection.commit()
     return True
 
-def upload_image(idir,ifile):
-    idscen=ifile.split(".")[0]
-    image=open(os.path.join(idir,ifile), 'rb').read()
-    qry = "INSERT INTO SCENARIO (idscen, image) VALUES (%s,%s);"
-    t=gencur()
-    t.cur.execute(qry, (idscen,image))
-    t.connection.commit()
-    #cursor.execute(sql, (idscen,image))
-
 def delete_flag():
     tag=config.ini.get('dbif','tag')
     qry="delete from TAG where TAGID='" + tag + "';"
     t=gencur(qry)
     t.connection.commit()
     
-def main(idir):
-	known_ext=["jpg","png","gif"]
-	for dirname, dirnames, filenames in os.walk(idir):
-		for filename in filenames:
-			ext=filename[-3:]
-			if ext in known_ext:
-				print "Processing " +os.path.join(dirname, filename)
-				upload_image(dirname, filename)
+
