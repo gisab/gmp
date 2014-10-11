@@ -29,6 +29,7 @@ import pluginClass
 from lxml import etree
 import traceback
 import libProduct
+import json
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -52,7 +53,9 @@ cmetadataparsed="METADATAPARSED"
 ccatalogued    ="CATALOGUED"
 
 #global constant for file queue workflow
-cfileQueued   ='QUEUED'
+cDwnStatusNo        ='N'
+cDwnStatusQueued    ='Q'
+cDwnStatusCompleted ='C'
 
 rep           =config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
 
@@ -93,9 +96,9 @@ class queue(object):
         self.db.exe(qry)
         
         #Insert records into FILES table
-        qry="INSERT INTO files (qid, filename, url) values ('%s', '%s', '%s');"
+        qry='INSERT INTO files (qid, targetid, filename, url) values ("%s","%s", "%s", "%s");'
         for i in newItemObj.files:
-            iqry=qry % (newItemObj.ID, i['filename'], i['url'])
+            iqry=qry % (newItemObj.ID, newItemObj.targetID, i['filename'], i['url'])
             if debug:
                 print iqry
             self.db.exe(iqry)
@@ -108,10 +111,6 @@ class queue(object):
         else:
             #Download and lock a queued item for triggering the download
             return self.getItem(lockpid=pid,fromStatus=(cdwnmeta,cdwncompleted,cdwnverified),toStatus=cfinalising)
-
-    def getItemForDownload(self,pid):
-        #Download and lock a queued item for triggering the download
-        return self.getItem(lockpid=pid,fromStatus=(cnew,),toStatus=cdwn)
 
     def getItemForMetalinkDownload(self,pid):
         #Download and lock a queued item for triggering the download
@@ -129,13 +128,26 @@ class queue(object):
         #Download and lock a queued item for triggering the download
         return self.getItem(lockpid=pid,fromStatus=(cmetadataparsed,),toStatus=ccatalogued)
 
-    def getItem(self,lockpid='#',fromStatus='#',toStatus='#'):
+    def getItemForDownload(self,pid):
+        #Download and lock a queued item for triggering the download
+        return self.getItem(lockpid=pid,fromStatus=('%'),dwnStatus=cDwnStatusQueued)
+
+    def getItem(self,lockpid='#',fromStatus='#',toStatus='#', dwnStatus='#'):
         assert fromStatus!='#'
-        
+        if dwnStatus!='#':
+            dwnquery=" AND dwnstatus='%s'" % dwnStatus
+        else:
+            dwnquery=""
+        if fromStatus=='%':
+            qwhere=" True "
+        else:
+            fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
+            qwhere="STATUS in (%s) " % fromStatusCriteria
+        qwhere+=dwnquery
         if lockpid=='#':
             #get withoud locking the first avaiable item in the list
             fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
-            qry="SELECT ID, STATUS FROM queue where STATUS in (%s) order by LAST_UPDATE ASC limit 1;" % fromStatusCriteria
+            qry="SELECT ID, STATUS FROM queue where %s order by LAST_UPDATE ASC limit 1;" % (qwhere)
             self.db.cur.execute(qry)
             rec=self.db.cur.fetchone()
             if rec==None:
@@ -145,17 +157,17 @@ class queue(object):
         else:
             #get and lock the first avaiable item in the list
             fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
-            qry="SELECT ID, STATUS FROM queue where STATUS in (%s) and pid is null order by LAST_UPDATE ASC limit 1 FOR UPDATE;" % fromStatusCriteria
+            qry="SELECT ID, TARGETID FROM queue where %s and pid is null order by LAST_UPDATE ASC limit 1 FOR UPDATE;" % (qwhere)
             self.db.cur.execute(qry)
             rec=self.db.cur.fetchone()
             if rec==None:
                 #no record found
                 return "#"
             nid=rec[0]
+            ntargetid=rec[1]
             #lock the current record
-            assert toStatus!='#'
-            qry="UPDATE queue SET pid='%s' where ID='%s';" % (lockpid, nid)
-            print qry
+            qry="UPDATE queue SET pid='%s' where ID='%s'and TARGETID='%s';" % (lockpid, nid, ntargetid)
+            #print qry
             self.db.exe(qry)
             self.db.connection.commit()
             #wait 1 second and check that the record is indeed locked by this running instance
@@ -206,16 +218,33 @@ class queue(object):
 
     def getAllMetadata(self,pid):
         somethingProcessed=False
+        processedInThisRun=list()
         while(True):
             y=self.getItemForGettingMetadata(pid)
             if y=='#':
                 #no record found
                 break
+            if y.id in processedInThisRun:
+                #completed a loop on all available item
+                #exit from this loop
+                break
+            if y.product.wkt not in (None, '','#'):
+                #Product already extracted
+                #probably the product is found on more than one target and metadata have been alreadt extracted by other target plugin.
+                #Do nothing and mark product as processed
+                y.close()
+                somethingProcessed=True
+                continue
             try:
+                processedInThisRun.append(y.id)
+                print "Processing getMetadata %s" % y.id
                 y.getMetadata()
                 y.close()
                 somethingProcessed=True
             except:
+                #Do not flag the product as NOK
+                #For ODA the product may be rolled an in a next run may be OK
+                #y.setStatus('NOK')
                 traceback.print_exc(file=sys.stdout)
                 pass
             y=None
@@ -223,12 +252,26 @@ class queue(object):
 
     def parseAllMetadata(self,pid):
         somethingProcessed=False
+        processedInThisRun=list()
         while(True):
             y=self.getItemForParsingMetadata(pid)
             if y=='#':
                 #no record found
                 break
+            if y.id in processedInThisRun:
+                #completed a loop on all available item
+                #exit from this loop
+                break
+            if y.product.wkt not in (None, '','#'):
+                #Product already extracted
+                #probably the product is found on more than one target and metadata have been alreadt extracted by other target plugin.
+                #Do nothing and mark product as processed
+                y.close()
+                somethingProcessed=True
+                continue
             try:
+                processedInThisRun.append(y.id)
+                print "Processing parseMetadata %s" % y.id
                 y.parseMetadata()
                 y.close()
                 somethingProcessed=True
@@ -247,6 +290,7 @@ class queue(object):
                 #no record found
                 break
             try:
+                print "Processing catalogue %s" % y.id
                 y.product.catalogue()
                 y.close()
                 somethingProcessed=True
@@ -261,7 +305,7 @@ class queuedItem(object):
     ##Constructor
     def __init__(self, itemID, closeStatus='#'):
         self.db=dbif.gencur("select 'none';")
-        qry="SELECT ID, STATUS, pid, agentid, targetid, LAST_UPDATE FROM queue where ID='%s';" % itemID
+        qry="SELECT ID, STATUS, pid, agentid, targetid, note, LAST_UPDATE FROM queue where ID='%s';" % itemID
         self.db.cur.execute(qry)
         rec=self.db.cur.fetchone()
         if rec==None:
@@ -273,7 +317,12 @@ class queuedItem(object):
         self.pid     =rec[2]
         self.agentid =rec[3]
         self.targetid=rec[4]
-        self.last_update=rec[5]
+        self.note    =rec[5]
+        try:
+            self.note    =json.loads(self.note)
+        except:
+            pass
+        self.last_update=rec[6]
         self.closeStatus=closeStatus
         
         #Get the download agent characteristic
@@ -286,7 +335,7 @@ class queuedItem(object):
             self.agentcli="ERROR: Agent CLI not found!"
         
         #Get the list of files to be downloaded
-        qry="SELECT ID, filename, url, status FROM files where qid='%s';" % itemID
+        qry="SELECT ID, filename, url, dwnstatus FROM files where qid='%s';" % itemID
         self.db.cur.execute(qry)
         rec=self.db.cur.fetchall()
         if rec==None:
@@ -298,7 +347,7 @@ class queuedItem(object):
             x['fileid']   =i[0]
             x['filename'] =i[1]
             x['url']      =i[2]
-            x['status']   =i[3]
+            x['dwnstatus']   =i[3]
             self.files.append(x)
 
         #Get the product characteristic
@@ -325,14 +374,26 @@ class queuedItem(object):
 
     ##Set new status for the object
     def setStatus(self,newStatus):
-        qry="UPDATE queue set STATUS='%s' where ID='%s';" % (newStatus, self.id)
+        qry="UPDATE queue set STATUS='%s' where ID='%s' and pid='%s';" % (newStatus, self.id, self.pid)
         self.db.exe(qry)
         self.status=newStatus
         pass
 
+    def setDwnStatus(self,newStatus):
+        qry="UPDATE queue set dwnstatus='%s' where ID='%s' and pid='%s';" % (newStatus, self.id, self.pid)
+        self.db.exe(qry)
+        self.dwnstatus=newStatus
+        pass
+
+    def setFileStatus(self,fileid, newStatus):
+        qry="UPDATE files set dwnstatus='%s' where ID=%s;" % (newStatus, fileid)
+        self.db.exe(qry)
+        self.dwnstatus=newStatus
+        pass
+
     ##Clean pid attribute, i.e. unlock
     def unlock(self):
-        qry="UPDATE queue set pid=Null where ID='%s';" % str(self.id)
+        qry="UPDATE queue set pid=Null where ID='%s' and pid='%s';" % (str(self.id), self.pid)
         self.db.exe(qry)
         pass
     
@@ -356,8 +417,18 @@ class queuedItem(object):
                     print 'manifest: %s' % i['filename']
                     manifest=i['filename']
                     self.manifestPath=rep+manifest
-                    self.manifestParser=etree.fromstring(open(self.manifestPath).read())
-                    return 
+                    self.manifestParser=etree.parse(self.manifestPath)
+                    break
+            return 
+        if self.targetid=='lfs':
+            for i in self.files:
+                if 'manifest' in i['filename'].lower():
+                    print 'manifest: %s' % i['filename']
+                    manifest=i['filename']
+                    self.manifestPath=self.note['folder']+'/'+manifest
+                    self.manifestParser=etree.parse(self.manifestPath)
+                    break
+            return 
 
     ## Search for the manifest and create file and xml handlers
     def parseManifest(self):
@@ -370,7 +441,10 @@ class queuedItem(object):
             #self.coordinatesWKT='POLYGON ((' + tmp +',' + firstpoint+ '))'
             self.coordinatesWKT=gml2wkt(self.coordinatesKML)
             for itag in ('startTime','stopTime'):
-                val=self.manifestParser.find('.//{http://www.esa.int/safe/sentinel-1.0}startTime').text
+                val=self.manifestParser.find('.//{http://www.esa.int/safe/sentinel-1.0}'+itag).text
+                self.product.addJson({itag:val})
+            for itag in ('orbitNumber','relativeOrbitNumber'):
+                val=self.manifestParser.find('.//{*}'+itag).text
                 self.product.addJson({itag:val})
     
     def storeManifestMetadata(self):
@@ -384,15 +458,48 @@ class queuedItem(object):
         qry="UPDATE product set kml='%s', wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (kmlbody, self.coordinatesWKT, self.coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
+
+    ## Search for the manifest and create file and xml handlers
+    def openDhusMetadata(self):
+        assert self.targetid=='dhus'
+        for i in self.files:
+            if 'xml' in i['filename'].lower():
+                print 'metadata file: %s' % i['filename']
+                metadata=i['filename']
+                self.metadataPath=rep+metadata
+                self.metadataParser=etree.parse(self.metadataPath)
+                break
+        return 
+
+    ## Search for the manifest and create file and xml handlers
+    def parseDhusMetadata(self):
+        #if self.manifestParser:
+        if hasattr(self,'metadataParser'):
+            self.coordinatesKML=self.metadataParser.find('.//{*}coordinates').text
+            #TODO: WARNING
+            #DHUS footprint is wrong and coordinates are swapped
+            #to take into account DHuS bug, the coordinates are swapped
+            self.coordinatesWKT=gml2wkt(self.coordinatesKML)
+            self.coordinatesWKT=gml2wkt_swap(self.coordinatesKML)
+            for itag in ('Start','End'):
+                val=self.metadataParser.find('.//{http://schemas.microsoft.com/ado/2007/08/dataservices}'+itag).text
+                self.product.addJson({itag:val})
+    
+    def storeDhusMetadata(self):
+        qry="UPDATE product set wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (self.coordinatesWKT, self.coordinatesWKT, self.id)
+        self.db.exe(qry)
+        pass
     
     def close(self):
-        assert self.closeStatus!='#'
-        self.setStatus(self.closeStatus)
-        
+        if self.closeStatus!='#':
+            self.setStatus(self.closeStatus)
+        else:
+            print "Warning: closing product %s with closeout status not set" % self.id
+
     def addFile(self,filename,url,status=''):
         #Insert records into FILES table
-        qry="INSERT INTO files (qid, filename, url) values ('%s', '%s', '%s');"
-        iqry=qry % (self.id, filename, url)
+        qry="INSERT INTO files (qid, targetid, filename, url) values ('%s', '%s', '%s', '%s');"
+        iqry=qry % (self.id, self.targetid, filename, url)
         self.db.exe(iqry)
         x=dict()
         x['filename'] =filename
@@ -432,6 +539,47 @@ class newItem(object):
             x['desc']=desc
         self.files.append(x)
 
+def workflow():
+    #loop on queue items
+    inloop=True
+    pid=str(os.getpid())
+    while(inloop):
+        inloop=False
+                
+        #getMetalink
+        q=queue()
+        isSomethingProcessed=q.getAllMetalinks(pid)
+        if isSomethingProcessed:
+            inloop=True
+            
+        #getMetadata
+        q=queue()
+        isSomethingProcessed=q.getAllMetadata(pid)
+        if isSomethingProcessed:
+            inloop=True
+
+        #parseMetadata
+        q=queue()
+        isSomethingProcessed=q.parseAllMetadata(pid)
+        if isSomethingProcessed:
+            inloop=True
+            
+        #catalogue
+        q=queue()
+        isSomethingProcessed=q.catalogueAll(pid)
+        if isSomethingProcessed:
+            inloop=True
+            
+            #y.getMetadata()
+            #y.parseMetadata()
+            #y.catalogue()
+            #y.userAPI()
+        #except:
+        #    traceback.print_exc(file=sys.stdout)
+        #pass
+    pass
+
+
 def gml2wkt(gml):
     tmp=gml.replace(',','/').replace(' ',',').replace('/',' ')
     firstpoint=tmp.split(',')[0]
@@ -465,3 +613,7 @@ def gml2gml_swap(gml):
     #y=p.split(',')[1]
     #wkt+=y+' '+x+'))'
     return wkt
+
+if __name__ == "__main__":
+    #test()
+    workflow()
