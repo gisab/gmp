@@ -39,7 +39,8 @@ def monitorChilds(processList):
     pids['failed']=list()
     pids['ok']=list()
 
-    for proc in processList:
+    for p in processList:
+        proc=p['proc']
         #print "proc" , proc.pid , "status " , proc.poll()
         if proc.poll()==None:
             pids['running'].append(proc.pid)
@@ -89,7 +90,7 @@ def main():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     for ifile in y.files:
-        if ifile['status']!=libQueue.cfileQueued:
+        if ifile['dwnstatus']!=libQueue.cDwnStatusQueued:
             continue
         newid=str(ifile['fileid'])
         currMonitor=monitorChilds(childs)
@@ -108,6 +109,8 @@ def main():
                 log("MAIN: Completed " + status + " process " +str(i))
         previousMonitor=currMonitor     
 
+        if ifile['url']==None or ifile['url']=='':
+            continue
         log('MAIN: Spawning new process ' +newid)
         logf='wget.log'
         targetFilename=repFolder+ifile['filename']
@@ -119,6 +122,7 @@ def main():
         cmd=cmd.replace('$USER',username)
         cmd=cmd.replace('$PASS',password)
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
+        cmd=cmd.replace('$','%24')
         #temporary network patch
         if True:
             cmd=cmd.replace('s1-pac1dmz-oda-v-20.sentinel1.eo.esa.int:80','localhost:14002')
@@ -127,14 +131,30 @@ def main():
         logcmd.write(cmd+'\n')
         if performDownload:
             newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
-            childs.append(newProc)
+            proc=dict()
+            proc['proc']    =newProc
+            proc['fileid']  =newid
+            proc['filename']=ifile['filename']
+            childs.append(proc)
         #time.sleep(1)
-    exit_codes = [p.wait() for p in childs]
-    print exit_codes
-    y.setStatus(libQueue.cdwncompleted)
-    #result=monitorChilds(childs)
-    #pprint.pprint(result)
+
+    #Wait that all downlaod/subprocessed are completed
+    noErrorFound=True
+    for proc in childs:
+        exitCode=proc['proc'].wait()
+        if exitCode==0:
+            y.setFileStatus(proc['fileid'], libQueue.cDwnStatusCompleted)
+        else:
+            print ' failed download of %s: %s' % (proc['fileid'], proc['filename'])
+            noErrorFound=False
     
+    if noErrorFound:
+        #Download completed succesfully
+        y.setDwnStatus(libQueue.cDwnStatusCompleted)
+    
+    y.unlock()
+    return
+
 if __name__ == "__main__":
     #Processing arguments from command line
     import argparse
