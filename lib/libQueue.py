@@ -462,11 +462,12 @@ class queuedItem(object):
     ## Search for the manifest and create file and xml handlers
     def openDhusMetadata(self):
         assert self.targetid=='dhus'
+        dhusMetadataRepository=config.ini.get('pluginDhus','dhusmetadatarepository').replace('$PRJ',prjFolder)
         for i in self.files:
             if 'xml' in i['filename'].lower():
                 print 'metadata file: %s' % i['filename']
                 metadata=i['filename']
-                self.metadataPath=rep+metadata
+                self.metadataPath=dhusMetadataRepository+metadata
                 self.metadataParser=etree.parse(self.metadataPath)
                 break
         return 
