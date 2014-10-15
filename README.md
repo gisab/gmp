@@ -7,56 +7,13 @@ For downloading and using the Copernicus Sentinels Imagery you need to be regist
 
 The registration is free and implies you agree with the "TERMS AND CONDITIONS FOR THE USE AND DISTRIBUTION OF SENTINEL DATA" (https://sentinel.esa.int/documents/247904/690755/TC_Sentinel_Data_31072014.pdf).
 
-1. PRE REQUIREMENT
-------------------
+INSTALLATION
+------------
 
-GMP is tested on linux like operative system and OS X.
+For the pre requirement and installation procedure, see the project wiki https://github.com/gisab/gmp/wiki/Installation-guide
 
-GMP relies on some open source components which are reported here as pre-requirement for the installation:
-- httpd
-- mysqld
-- python
-- php
-
-Several solution exist and may be used for hosting GMP, like:
-- linux:   LAMP http://it.wikipedia.org/wiki/LAMP_(piattaforma)
-- OS X:    MAMP http://it.wikipedia.org/wiki/MAMP and http://www.mamp.info/en/
-- Windows: WAMP http://it.wikipedia.org/wiki/WAMP and http://www.wampserver.com/en/
-
-For the python environment few packages sometimes not included in standard distribution may be needed:
-- argparse
-- lxml
-- MySQLdb
-
-To install the packages use the setuptools procedure:
-sudo easy_install argparse
-sudo easy_install lxml
-sudo easy_install MySQLdb
-
-
-2. INSTALLATION
----------------
-
-For the installation you need to download the software from the official repository and configure it.
-
-a. Download the software
-open a shell and execute:
-git clone https://github.com/gisab/gmp.git
-
-b. Configure
-- edit the file lib/config.ini and set into the section [dbif] the credential for accessing mysql db; the db, if not existing, will be generated at the first run.
-- edit the file web/phpgen_settings.php and set into the function GetGlobalConnectionOptions the credential for accessing mysql db.
-
-c. Deploy
-- link the folder web under your httpd folder; for example if you are using MAMP for OSX launch the command:
-ln -s {path of}/gmp/web/ /Applications/MAMP/htdocs/gmp
-
-d. Download latest patches
-After the installation, at any time you may download the latest build of the software by running the command:
-git pull
-
-3. USE
-------
+USE
+---
 
 a. Downloading imagery metadata
 For getting the metadata on the available imagery execute the plugin:
