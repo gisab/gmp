@@ -35,7 +35,7 @@ CREATE TABLE `agent` (
 
 LOCK TABLES `agent` WRITE;
 /*!40000 ALTER TABLE `agent` DISABLE KEYS */;
-INSERT INTO `agent` VALUES ('lfs','n/a'),('wget','wget -O $FILENAME \'$URL\' --limit-rate=$MAXBANDWIDTH'),('wget-auth','wget -O $FILENAME \'$URL\' --http-user=$USER --http-password=$PASS');
+INSERT INTO `agent` VALUES ('lfs','n/a'),('wget','wget -O $FILENAME \'$URL\' --limit-rate=$MAXBANDWIDTH'),('wget-auth','wget -O $FILENAME \"$URL\" --http-user=$USER --http-password=$PASS  --no-check-certificate');
 /*!40000 ALTER TABLE `agent` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -82,4 +82,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-11  9:01:25
+-- Dump completed on 2014-10-13 11:07:01

@@ -71,37 +71,6 @@ CREATE TABLE `files` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `old-countrygeom`
---
-
-DROP TABLE IF EXISTS `old-countrygeom`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `old-countrygeom` (
-  `cid` int(8) unsigned NOT NULL AUTO_INCREMENT,
-  `tld` char(2) NOT NULL DEFAULT '',
-  `geom` text,
-  PRIMARY KEY (`cid`)
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `old-countrynames`
---
-
-DROP TABLE IF EXISTS `old-countrynames`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `old-countrynames` (
-  `cid` int(8) unsigned NOT NULL AUTO_INCREMENT,
-  `tld` char(2) NOT NULL DEFAULT '',
-  `cnameen` char(128) DEFAULT NULL,
-  `cnamede` char(128) DEFAULT NULL,
-  PRIMARY KEY (`cid`)
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `product`
 --
 
@@ -451,4 +420,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-11  9:01:25
+-- Dump completed on 2014-10-13 11:07:01
