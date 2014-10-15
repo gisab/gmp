@@ -1978,7 +1978,7 @@
     
         protected function AddFieldColumns(Grid $grid)
         {
-            if (GetCurrentUserGrantForDataSource('test.')->HasViewGrant())
+            if (GetCurrentUserGrantForDataSource('test.queue')->HasViewGrant())
             {
               //
             // View column for queueDetailView0test detail
@@ -3393,14 +3393,14 @@
             //
             // Http Handlers
             //
-            $pageView = new queueDetailView0testPage($this, 'Queue', 'Queue', array('id'), GetCurrentUserGrantForDataSource('test.'), 'UTF-8', 20, 'queueDetailEdit0test_handler');
+            $pageView = new queueDetailView0testPage($this, 'Queue', 'Queue', array('id'), GetCurrentUserGrantForDataSource('test.queue'), 'UTF-8', 20, 'queueDetailEdit0test_handler');
             
-            $pageView->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('test.'));
+            $pageView->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('test.queue'));
             $handler = new PageHTTPHandler('queueDetailView0test_handler', $pageView);
             GetApplication()->RegisterHTTPHandler($handler);
-            $pageEdit = new queueDetailEdit0testPage($this, array('id'), array('id'), $this->GetForeingKeyFields(), $this->CreateMasterDetailRecordGridForqueueDetailEdit0testGrid(), $this->dataset, GetCurrentUserGrantForDataSource('test.'), 'UTF-8');
+            $pageEdit = new queueDetailEdit0testPage($this, array('id'), array('id'), $this->GetForeingKeyFields(), $this->CreateMasterDetailRecordGridForqueueDetailEdit0testGrid(), $this->dataset, GetCurrentUserGrantForDataSource('test.queue'), 'UTF-8');
             
-            $pageEdit->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('test.'));
+            $pageEdit->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('test.queue'));
             $pageEdit->SetShortCaption('Queue');
             $pageEdit->SetHeader(GetPagesHeader());
             $pageEdit->SetFooter(GetPagesFooter());
