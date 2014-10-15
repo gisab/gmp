@@ -40,16 +40,16 @@ python ./downloadManager.py
 e. Accessing the product from your local file system
 The downloaded imagery are stored according to the variable 'repository' set into the [downloader] section of the config.ini.
 
-4.  Contacts
-------------
+Contacts
+--------
 
 If you want to be informed about new code releases, bug fixes, general news and information contact the author via email at gianluca.sabella@gmail.com
 
 If you want to contribute to the project, follow it on https://github.com/gisab/gmp.
 
 The project is not founded and based on spontaneous donation.
-If you found it useful and you want to contribute, please follow this link:
-https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=gianluca%2esabella%40gmail%2ecom&lc=IT&item_name=GMP&item_number=GMPweb&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
+If you found it useful and you want to contribute, please follow this link: [donate](
+https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=gianluca%2esabella%40gmail%2ecom&lc=IT&item_name=GMP&item_number=GMPweb&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted).
 It will be very much appreciated.
 
 -------------------------------------------------------------------------------
