@@ -75,9 +75,11 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
 
         d=datetime.datetime.strptime(self.res['last_execution_time'],'%Y-%m-%dT%H:%M:%S.%f')
         delta = datetime.timedelta(days=1)
-        self.plan=list()
+        
 
         while d <= datetime.datetime.now():
+            self.plan=list()
+            
             print "Searching products ingested on day %s " % d.strftime("%Y-%m-%d")
 
             turl=url.replace('$YEAR',str(d.year)).replace('$MONTH', str(d.month)).replace('$DAY',str(d.day))
@@ -98,6 +100,7 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
                     #no new record found; exiting from loop
                     #print "no new record found on this day"
                     break
+            self.storePlan()
             d += delta
         
         #set the execution time to be saved at the end of the loop in case the routine go till the end
@@ -206,11 +209,11 @@ def testworkflow():
         #q=libQueue.queue(init='new')
         x=gmpPluginDhus()
         x.getPlan()
-        x.storePlan()
+        #x.storePlan()
         del x
-        
-    #Process queue
-    libQueue.workflow()
+
+    #Process queue last time in a serial way
+    libQueue.serialWorkflow()
     
 if __name__ == "__main__":
     #test()

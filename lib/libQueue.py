@@ -30,6 +30,7 @@ from lxml import etree
 import traceback
 import libProduct
 import json
+import subprocess
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -155,10 +156,22 @@ class queue(object):
                 return "#"
             nid=rec[0]
         else:
+            qry="START TRANSACTION;"
+            self.db.cur.execute(qry)
             #get and lock the first avaiable item in the list
             fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
             qry="SELECT ID, TARGETID FROM queue where %s and pid is null order by LAST_UPDATE ASC limit 1 FOR UPDATE;" % (qwhere)
-            self.db.cur.execute(qry)
+            counter=0
+            while True:
+                if counter>5:
+                    raise "Not able to lock a record"
+                try:
+                    counter+=1
+                    self.db.cur.execute(qry)
+                    break
+                except:
+                    print "Deadlock exception; sleeping and retry"
+                    time.sleep(1)
             rec=self.db.cur.fetchone()
             if rec==None:
                 #no record found
@@ -196,6 +209,11 @@ class queue(object):
     
     def cleanpid(self):
         qry="UPDATE queue SET pid=Null;"
+        print qry
+        self.db.exe(qry)
+
+    def cleanNOK(self):
+        qry="UPDATE queue SET status='%s' where status='NOK';" % cnew
         print qry
         self.db.exe(qry)
     
@@ -379,6 +397,13 @@ class queuedItem(object):
         self.status=newStatus
         pass
 
+    ##Set new pid for the object
+    def setPid(self,newValue):
+        qry="UPDATE queue set pid='%s' where ID='%s';" % (newValue, self.id)
+        self.db.exe(qry)
+        self.pid=newValue
+        pass
+
     def setDwnStatus(self,newStatus):
         qry="UPDATE queue set dwnstatus='%s' where ID='%s' and pid='%s';" % (newStatus, self.id, self.pid)
         self.db.exe(qry)
@@ -540,7 +565,7 @@ class newItem(object):
             x['desc']=desc
         self.files.append(x)
 
-def workflow():
+def serialWorkflow():
     #loop on queue items
     inloop=True
     pid=str(os.getpid())
@@ -580,6 +605,105 @@ def workflow():
         #pass
     pass
 
+def parallelWorkflow():
+    pid=str(os.getpid())
+    import downloader
+    maxParallelItem=50
+    sleepTimeForWaitingChilds=1
+    childs=list()
+    previousMonitor=dict()
+    previousMonitor['failed']=list()
+    previousMonitor['ok']=list()
+    q=libQueue.queue()
+    while True:
+        currMonitor=downloader.monitorChilds(childs)
+        #wait for a free resource
+        while(currMonitor['nRun']>=maxParallelItem):
+            print 'MAIN: waiting for childs: ' + str(currMonitor['running'])
+            time.sleep(sleepTimeForWaitingChilds)
+            currMonitor=downloader.monitorChilds(childs)
+        #print the result of the last released resource
+        #compare succeded processes
+        for status in ['ok','failed']:
+            new=currMonitor[status]
+            newset=set(new)
+            diff=newset.difference(previousMonitor[status])
+            for i in diff:
+                print "MAIN: Completed " + status + " process " +str(i)
+        previousMonitor=currMonitor
+        x=q.getItem(lockpid=pid,fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata)
+        if x=="#":
+            break
+        cmd="/usr/bin/python libQueue.py --id %s" % x.id
+        del x
+        print cmd
+        newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
+        proc=dict()
+        proc['proc']    =newProc
+        proc['id']      =id
+        childs.append(proc)
+        
+    #Wait that all downlaod/subprocessed are completed
+    noErrorFound=True
+    for proc in childs:
+        exitCode=proc['proc'].wait()
+        if exitCode==0:
+            pass
+        else:
+            print "Workflow for product %s failed" % proc['id']
+            noErrorFound=False
+    print noErrorFound
+
+def process(id):
+    pid=str(os.getpid())
+    x=queuedItem(id)
+    
+    counter=0
+    while True:
+        counter+=1
+        if counter>5:
+            raise "product %s is locked since a while; exiting" % id
+        if x.pid is not None:
+            print "product %s is locked; sleeping" % id
+            time.sleep(10)
+            #note: when recreating x, the delete of the previous instance remove the pid lock!
+            x=queuedItem(id)
+        break
+
+    x.setPid(pid)
+    
+    if x.status in (cnew):
+        try:
+            x.getMetalink()
+            x.setStatus(chasmetalink)
+        except:
+            traceback.print_exc(file=sys.stdout)
+            x.setStatus('NOK')
+
+    if x.status in (chasmetalink):
+        try:
+            x.getMetadata()
+            x.setStatus(chasmetadata)
+        except:
+            traceback.print_exc(file=sys.stdout)
+            x.setStatus('NOK')
+    
+    if x.status in (chasmetadata):
+        try:
+            x.parseMetadata()
+            x.setStatus(cmetadataparsed)
+        except:
+            traceback.print_exc(file=sys.stdout)
+            x.setStatus('NOK')
+
+    if x.status in (cmetadataparsed):
+        try:
+            x.product.catalogue()
+            x.setStatus(ccatalogued)
+        except:
+            traceback.print_exc(file=sys.stdout)
+            x.setStatus('NOK')
+    pass
 
 def gml2wkt(gml):
     tmp=gml.replace(',','/').replace(' ',',').replace('/',' ')
@@ -616,5 +740,27 @@ def gml2gml_swap(gml):
     return wkt
 
 if __name__ == "__main__":
-    #test()
-    workflow()
+    import argparse
+    parser = argparse.ArgumentParser(description="Library for managing the queue")
+    parser.add_argument("--id", dest="id", help="Process the full workflow about a specific product")
+    parser.add_argument("--gos", dest="gos", action="store_true", help="Process the full workflow in a serial way")
+    parser.add_argument("--gop", dest="gop", action="store_true", help="Process the full workflow in a parallel way")
+    parser.add_argument("--go", dest="go", action="store_true", help="Process the full workflow in a parallel way; fix error and finish processing in a serial way")
+    args=parser.parse_args()
+    if args.id:
+        process(args.id)
+        sys.exit()
+    if args.gos:
+        serialWorkflow()
+        sys.exit(0)
+    if args.gop:
+        parallelWorkflow()
+        sys.exit(0)
+    if args.go:
+        parallelWorkflow()
+        q=queue()
+        q.cleanpid()
+        q.cleanNOK()
+        serialWorkflow()
+        sys.exit(0)
+    print "No valid argument found; try -h."
