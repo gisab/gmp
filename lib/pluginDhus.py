@@ -32,6 +32,13 @@ import pprint
 import json
 import traceback
 
+import platform
+if platform.system()=='Windows':
+    isWin=True
+else:
+    isWin=False
+print "Is windows %s" % isWin
+
 #config
 host     = config.ini.get(APPID,'host')
 protocol = config.ini.get(APPID,'protocol')
@@ -45,6 +52,10 @@ metadatafile=config.ini.get(APPID,'metadatafile')
 resourcefile=config.ini.get(APPID,'resourcefile').replace('$PRJ',prjFolder)
 dhusMetadataRepository=config.ini.get(APPID,'dhusmetadatarepository').replace('$PRJ',prjFolder)
 debug    = True
+
+if isWin:
+    dhusMetadataRepository=dhusMetadataRepository.replace('/','\\')
+    resourcefile=resourcefile.replace('/','\\')
 
 ## gmpPluginDhus class
 # It is a specialization of the generic pluginClass
