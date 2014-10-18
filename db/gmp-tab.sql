@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.5.34, for osx10.6 (i386)
 --
--- Host: 127.0.0.1    Database: gmp
+-- Host: 127.0.0.1    Database: gmp-ref
 -- ------------------------------------------------------
 -- Server version	5.5.34
 
@@ -70,7 +70,36 @@ INSERT INTO `country` VALUES (1281,'New Zealand','POLYGON ((-39.853057861328125 
 UNLOCK TABLES;
 
 --
--- Dumping routines for database 'gmp'
+-- Table structure for table `target`
+--
+
+DROP TABLE IF EXISTS `target`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `target` (
+  `id` varchar(10) NOT NULL,
+  `type` enum('oda','dhus','lfs') NOT NULL,
+  `hostname` varchar(128) NOT NULL,
+  `username` varchar(64) NOT NULL,
+  `password` varchar(64) NOT NULL,
+  `protocol` varchar(10) NOT NULL DEFAULT 'http:80',
+  `rep` varchar(256) NOT NULL DEFAULT '$PRJ/rep/',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `target`
+--
+
+LOCK TABLES `target` WRITE;
+/*!40000 ALTER TABLE `target` DISABLE KEYS */;
+INSERT INTO `target` VALUES ('cgs1oda','oda','131.176.233.8','myusername','password','http:80','$PRJ/rep/cgs1'),('cgs2oda','oda','131.176.233.72','myusername','password','http:80','$PRJ/rep/cgs2'),('pac1oda','oda','131.176.234.8','myusername','password','http:80','$PRJ/rep/pac1'),('scihub','dhus','131.176.236.10','myusername','password','http:80','$PRJ/rep/scihub');
+/*!40000 ALTER TABLE `target` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'gmp-ref'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -82,4 +111,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-13 11:07:01
+-- Dump completed on 2014-10-18 20:53:06

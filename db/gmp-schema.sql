@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.5.34, for osx10.6 (i386)
 --
--- Host: 127.0.0.1    Database: gmp
+-- Host: 127.0.0.1    Database: gmp-ref
 -- ------------------------------------------------------
 -- Server version	5.5.34
 
@@ -67,7 +67,7 @@ CREATE TABLE `files` (
   KEY `qid` (`qid`),
   KEY `qid_2` (`qid`,`targetid`),
   CONSTRAINT `fk` FOREIGN KEY (`qid`, `targetid`) REFERENCES `queue` (`id`, `targetid`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=109364 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=124824 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -149,19 +149,17 @@ CREATE TABLE `queue` (
   `id` varchar(128) NOT NULL COMMENT 'client id',
   `note` varchar(128) NOT NULL DEFAULT '',
   `status` varchar(16) NOT NULL,
+  `dwnstatus` enum('N','C','Q') NOT NULL DEFAULT 'N',
   `LAST_UPDATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pid` varchar(8) DEFAULT NULL,
   `agentid` varchar(10) DEFAULT NULL,
   `targetid` varchar(10) NOT NULL DEFAULT '',
-  `footprintwkt` varchar(1000) DEFAULT NULL,
-  `tags` varchar(2000) DEFAULT NULL,
-  `footprint` geometry DEFAULT NULL,
-  `dwnstatus` enum('N','C','Q') NOT NULL DEFAULT 'N',
   PRIMARY KEY (`id`,`targetid`),
   KEY `iid` (`id`) USING BTREE,
   KEY `ipid` (`pid`) USING BTREE,
   KEY `istatus` (`status`) USING BTREE,
-  KEY `dstatus` (`dwnstatus`) USING BTREE
+  KEY `dstatus` (`dwnstatus`) USING BTREE,
+  CONSTRAINT `fk1` FOREIGN KEY (`id`) REFERENCES `product` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -203,6 +201,25 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `target`
+--
+
+DROP TABLE IF EXISTS `target`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `target` (
+  `id` varchar(10) NOT NULL,
+  `type` enum('oda','dhus','lfs') NOT NULL,
+  `hostname` varchar(128) NOT NULL,
+  `username` varchar(64) NOT NULL,
+  `password` varchar(64) NOT NULL,
+  `protocol` varchar(10) NOT NULL DEFAULT 'http:80',
+  `rep` varchar(256) NOT NULL DEFAULT '$PRJ/rep/',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Temporary table structure for view `vfiles_lasthour`
@@ -251,6 +268,26 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary table structure for view `vqueue_downloading`
+--
+
+DROP TABLE IF EXISTS `vqueue_downloading`;
+/*!50001 DROP VIEW IF EXISTS `vqueue_downloading`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `vqueue_downloading` (
+  `id` tinyint NOT NULL,
+  `note` tinyint NOT NULL,
+  `status` tinyint NOT NULL,
+  `dwnstatus` tinyint NOT NULL,
+  `LAST_UPDATE` tinyint NOT NULL,
+  `pid` tinyint NOT NULL,
+  `agentid` tinyint NOT NULL,
+  `targetid` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary table structure for view `vqueue_lasthour`
 --
 
@@ -266,9 +303,6 @@ SET character_set_client = utf8;
   `pid` tinyint NOT NULL,
   `agentid` tinyint NOT NULL,
   `targetid` tinyint NOT NULL,
-  `footprintwkt` tinyint NOT NULL,
-  `tags` tinyint NOT NULL,
-  `footprint` tinyint NOT NULL,
   `dwnstatus` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -285,14 +319,11 @@ SET character_set_client = utf8;
   `id` tinyint NOT NULL,
   `note` tinyint NOT NULL,
   `status` tinyint NOT NULL,
+  `dwnstatus` tinyint NOT NULL,
   `LAST_UPDATE` tinyint NOT NULL,
   `pid` tinyint NOT NULL,
   `agentid` tinyint NOT NULL,
-  `targetid` tinyint NOT NULL,
-  `footprintwkt` tinyint NOT NULL,
-  `tags` tinyint NOT NULL,
-  `footprint` tinyint NOT NULL,
-  `dwnstatus` tinyint NOT NULL
+  `targetid` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -313,7 +344,7 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
--- Dumping routines for database 'gmp'
+-- Dumping routines for database 'gmp-ref'
 --
 
 --
@@ -355,6 +386,25 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `vqueue_downloading`
+--
+
+/*!50001 DROP TABLE IF EXISTS `vqueue_downloading`*/;
+/*!50001 DROP VIEW IF EXISTS `vqueue_downloading`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vqueue_downloading` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`dwnstatus` AS `dwnstatus`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid` from `queue` where (`queue`.`dwnstatus` = 'Q') order by `queue`.`LAST_UPDATE` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `vqueue_lasthour`
 --
 
@@ -368,7 +418,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `vqueue_lasthour` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid`,`queue`.`footprintwkt` AS `footprintwkt`,`queue`.`tags` AS `tags`,`queue`.`footprint` AS `footprint`,`queue`.`dwnstatus` AS `dwnstatus` from `queue` where (`queue`.`LAST_UPDATE` > (now() - interval 1 hour)) order by `queue`.`LAST_UPDATE` desc */;
+/*!50001 VIEW `vqueue_lasthour` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid`,`queue`.`dwnstatus` AS `dwnstatus` from `queue` where (`queue`.`LAST_UPDATE` > (now() - interval 1 hour)) order by `queue`.`LAST_UPDATE` desc */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -387,7 +437,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `vqueue_nok` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid`,`queue`.`footprintwkt` AS `footprintwkt`,`queue`.`tags` AS `tags`,`queue`.`footprint` AS `footprint`,`queue`.`dwnstatus` AS `dwnstatus` from `queue` where ((`queue`.`status` = 'NOK') or (`queue`.`pid` is not null)) order by `queue`.`pid`,`queue`.`LAST_UPDATE` desc */;
+/*!50001 VIEW `vqueue_nok` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`dwnstatus` AS `dwnstatus`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid` from `queue` where ((`queue`.`status` = 'NOK') or (`queue`.`pid` is not null)) order by `queue`.`pid`,`queue`.`LAST_UPDATE` desc */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -420,4 +470,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-13 11:07:01
+-- Dump completed on 2014-10-18 20:53:06
