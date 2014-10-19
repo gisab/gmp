@@ -50,6 +50,9 @@
             $field = new StringField('status');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
+            $field = new StringField('dwnstatus');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
             $field = new DateTimeField('LAST_UPDATE');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
@@ -60,15 +63,6 @@
             $field = new StringField('targetid');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
-            $field = new StringField('footprintwkt');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('tags');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('dwnstatus');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
         }
     
         protected function AddFieldColumns(Grid $grid)
@@ -323,103 +317,6 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(false);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('footprintwkt_handler');
-            
-            /* <inline edit column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(false);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('tags_handler');
-            
-            /* <inline edit column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(false);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
             // View column for dwnstatus field
             //
             $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
@@ -486,9 +383,9 @@
             $result->SetAllowDeleteSelected(false);
             $result->SetUseFixedHeader(false);
             
-            $result->SetShowLineNumbers(false);
+            $result->SetShowLineNumbers(true);
             
-            $result->SetHighlightRowAtHover(false);
+            $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
             $this->AddFieldColumns($result);
             //
@@ -553,64 +450,6 @@
             /* </inline insert column> */
             $handler = new ShowTextBlobHandler($this->dataset, $this, 'note_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(false);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'footprintwkt_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(false);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'tags_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
             return $result;
         }
     }
@@ -638,6 +477,9 @@
             $field = new StringField('status');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
+            $field = new StringField('dwnstatus');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
             $field = new DateTimeField('LAST_UPDATE');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
@@ -648,15 +490,6 @@
             $field = new StringField('targetid');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
-            $field = new StringField('footprintwkt');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('tags');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('dwnstatus');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
         }
     
         protected function CreatePageNavigator()
@@ -684,8 +517,8 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('queueDetailEdit0testssearch', $this->dataset,
-                array('id', 'note', 'status', 'LAST_UPDATE', 'pid', 'agentid', 'targetid', 'footprintwkt', 'tags', 'footprint', 'dwnstatus'),
-                array($this->RenderText('Id'), $this->RenderText('Note'), $this->RenderText('Status'), $this->RenderText('LAST UPDATE'), $this->RenderText('Pid'), $this->RenderText('Agentid'), $this->RenderText('Targetid'), $this->RenderText('Footprintwkt'), $this->RenderText('Tags'), $this->RenderText('Footprint'), $this->RenderText('Dwnstatus')),
+                array('id', 'note', 'status', 'LAST_UPDATE', 'pid', 'agentid', 'targetid', 'dwnstatus'),
+                array($this->RenderText('Id'), $this->RenderText('Note'), $this->RenderText('Status'), $this->RenderText('LAST UPDATE'), $this->RenderText('Pid'), $this->RenderText('Agentid'), $this->RenderText('Targetid'), $this->RenderText('Dwnstatus')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -712,9 +545,6 @@
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('pid', $this->RenderText('Pid')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('agentid', $this->RenderText('Agentid')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('targetid', $this->RenderText('Targetid')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('footprintwkt', $this->RenderText('Footprintwkt')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('tags', $this->RenderText('Tags')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('footprint', $this->RenderText('Footprint')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('dwnstatus', $this->RenderText('Dwnstatus')));
         }
     
@@ -980,103 +810,6 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('footprintwkt_handler');
-            
-            /* <inline edit column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('tags_handler');
-            
-            /* <inline edit column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
             // View column for dwnstatus field
             //
             $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
@@ -1174,31 +907,6 @@
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('footprintwkt_handler');
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('tags_handler');
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
             // View column for dwnstatus field
             //
             $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
@@ -1281,33 +989,6 @@
             $editColumn = new CustomEditColumn('Targetid', 'targetid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
             
@@ -1405,33 +1086,6 @@
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddInsertColumn($editColumn);
-            
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddInsertColumn($editColumn);
-            
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddInsertColumn($editColumn);
-            
-            //
             // Edit column for dwnstatus field
             //
             $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
@@ -1509,27 +1163,6 @@
             $grid->AddPrintColumn($column);
             
             //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
             // View column for dwnstatus field
             //
             $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
@@ -1590,27 +1223,6 @@
             $grid->AddExportColumn($column);
             
             //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
             // View column for dwnstatus field
             //
             $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
@@ -1645,9 +1257,9 @@
             $result->SetUseImagesForActions(true);
             $result->SetUseFixedHeader(false);
             
-            $result->SetShowLineNumbers(false);
+            $result->SetShowLineNumbers(true);
             
-            $result->SetHighlightRowAtHover(false);
+            $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
@@ -1738,64 +1350,6 @@
             $column->SetInsertOperationColumn($editColumn);
             /* </inline insert column> */
             $handler = new ShowTextBlobHandler($this->dataset, $this, 'note_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for footprintwkt field
-            //
-            $editor = new TextAreaEdit('footprintwkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Footprintwkt', 'footprintwkt', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'footprintwkt_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for tags field
-            //
-            $editor = new TextAreaEdit('tags_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Tags', 'tags', $editor, $this->dataset);
-            $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'tags_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);//
             // View column for id field
             //
@@ -1809,20 +1363,6 @@
             $column = new TextViewColumn('note', 'Note', $this->dataset);
             $column->SetOrderable(true);
             $handler = new ShowTextBlobHandler($this->dataset, $this, 'note_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for footprintwkt field
-            //
-            $column = new TextViewColumn('footprintwkt', 'Footprintwkt', $this->dataset);
-            $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'footprintwkt_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for tags field
-            //
-            $column = new TextViewColumn('tags', 'Tags', $this->dataset);
-            $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'tags_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);
             return $result;
         }
@@ -1918,6 +1458,18 @@
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files')));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent')));
+            if (GetCurrentUserGrantForDataSource('vqueue_stats')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics')));
+            if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors')));
+            if (GetCurrentUserGrantForDataSource('vqueue_lasthour')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour')));
+            if (GetCurrentUserGrantForDataSource('vqueue_downloading')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading')));
+            if (GetCurrentUserGrantForDataSource('country')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Country'), 'country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country')));
+            if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target')));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() )
               $result->AddPage(new PageLink($this->GetLocalizerCaptions()->GetMessageString('AdminPage'), 'phpgen_admin.php', $this->GetLocalizerCaptions()->GetMessageString('AdminPage'), false, true));
@@ -3088,6 +2640,7 @@
         {
             $result = new Grid($this, $this->dataset, 'MasterDetailRecordGridForqueueDetailEdit0test');
             $result->SetAllowDeleteSelected(false);
+            $result->OnCustomRenderColumn->AddListener('MasterDetailRecordGridForqueueDetailEdit0test' . '_' . 'OnCustomRenderColumn', $this);
             $result->SetShowFilterBuilder(false);
             $result->SetAdvancedSearchAvailable(false);
             $result->SetFilterRowAvailable(false);
@@ -3328,6 +2881,34 @@
             return $result;
         }
         
+        function MasterDetailRecordGridForqueueDetailEdit0test_OnCustomRenderColumn($fieldName, $fieldData, $rowData, &$customText, &$handled)
+        {
+            if ($fieldName == 'dwnstatus')
+            {
+                $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
+                $customText .= 
+                '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
+                    ($fieldData == Q ? 'Queued' : 'None') . 
+                '</span>';
+                if ($fieldData == N) {
+                $customText .= 
+                '<button onclick="' . 
+                    "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
+                    "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');"  .
+                    "$.getJSON(
+                    'queue_status.php?id=" . $rowData['id'] . 
+                        "&dwnstatus=Q', " . 
+                    "function(data) { " . 
+                        "dwnstatusValue.html(data.dwnstatus);" . 
+                        "dwnstatusCaption.html(data.dwnstatus == 1)" . 
+                    "});" . 
+                    "return false;". 
+                '">Queue</button>';
+                }
+                $handled = true;
+            }
+        }
+        
         function GetCustomClientScript()
         {
             return ;
@@ -3343,6 +2924,33 @@
                                {
                                 $result = 'PRODUCT.tpl';
                                 }
+        }
+        function testGrid_OnCustomRenderColumn($fieldName, $fieldData, $rowData, &$customText, &$handled)
+        {
+            if ($fieldName == 'dwnstatus')
+            {
+                $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
+                $customText .= 
+                '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
+                    ($fieldData == Q ? 'Queued' : 'None') . 
+                '</span>';
+                if ($fieldData == N) {
+                $customText .= 
+                '<button onclick="' . 
+                    "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
+                    "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');"  .
+                    "$.getJSON(
+                    'queue_status.php?id=" . $rowData['id'] . 
+                        "&dwnstatus=Q', " . 
+                    "function(data) { " . 
+                        "dwnstatusValue.html(data.dwnstatus);" . 
+                        "dwnstatusCaption.html(data.dwnstatus == 1)" . 
+                    "});" . 
+                    "return false;". 
+                '">Queue</button>';
+                }
+                $handled = true;
+            }
         }
     
         protected function CreateGrid()
@@ -3365,6 +2973,7 @@
             $result->SetHighlightRowAtHover(false);
             $result->SetWidth('');
             $this->OnGetCustomTemplate->AddListener('testGrid' . '_OnGetCustomTemplate', $this);
+            $result->OnCustomRenderColumn->AddListener('testGrid' . '_' . 'OnCustomRenderColumn', $this);
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
             $this->AddOperationsColumns($result);

@@ -172,9 +172,9 @@
             $result->SetAllowDeleteSelected(false);
             $result->SetUseFixedHeader(false);
             
-            $result->SetShowLineNumbers(false);
+            $result->SetShowLineNumbers(true);
             
-            $result->SetHighlightRowAtHover(false);
+            $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
             $this->AddFieldColumns($result);
             //
@@ -582,9 +582,9 @@
             $result->SetUseImagesForActions(true);
             $result->SetUseFixedHeader(false);
             
-            $result->SetShowLineNumbers(false);
+            $result->SetShowLineNumbers(true);
             
-            $result->SetHighlightRowAtHover(false);
+            $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
@@ -724,6 +724,9 @@
             $field = new StringField('status');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
+            $field = new StringField('dwnstatus');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
             $field = new DateTimeField('LAST_UPDATE');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
@@ -734,15 +737,6 @@
             $field = new StringField('targetid');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
-            $field = new StringField('footprintwkt');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('tags');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('footprint');
-            $this->dataset->AddField($field, false);
-            $field = new StringField('dwnstatus');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
         }
     
         protected function CreatePageNavigator()
@@ -775,6 +769,18 @@
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files')));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent')));
+            if (GetCurrentUserGrantForDataSource('vqueue_stats')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics')));
+            if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors')));
+            if (GetCurrentUserGrantForDataSource('vqueue_lasthour')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour')));
+            if (GetCurrentUserGrantForDataSource('vqueue_downloading')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading')));
+            if (GetCurrentUserGrantForDataSource('country')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Country'), 'country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country')));
+            if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target')));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() )
               $result->AddPage(new PageLink($this->GetLocalizerCaptions()->GetMessageString('AdminPage'), 'phpgen_admin.php', $this->GetLocalizerCaptions()->GetMessageString('AdminPage'), false, true));
@@ -1766,9 +1772,9 @@
             $result->SetUseImagesForActions(true);
             $result->SetUseFixedHeader(false);
             
-            $result->SetShowLineNumbers(false);
+            $result->SetShowLineNumbers(true);
             
-            $result->SetHighlightRowAtHover(false);
+            $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
             $result->OnCustomRenderColumn->AddListener('queueGrid' . '_' . 'OnCustomRenderColumn', $this);
             $this->CreateGridSearchControl($result);

@@ -1,3 +1,41 @@
+{php}
+/*
+function recursive($array, $level = 1){
+    foreach($array as $key => $value){
+        //If $value is an array.
+        if(is_array($value)){
+            //We need to loop through it.
+          if ($level<3){
+            recursive($value, $level + 1);
+          }
+        } else{
+            //It is not an array, so print it out.
+            echo str_repeat("-", $level);
+            echo $key . ": ";
+            try{
+               echo $value;
+            } catch (Exception $e)
+            { 
+               //echo "no stringable" .$e->getMessage(), '<br>'
+               echo '2';
+            }
+            echo '<br>';
+        }
+    }
+}
+
+//echo "/*";
+//echo "<pre>";
+//$x=get_defined_vars();
+//$dump=recursive($x,True);
+//$fp = fopen("/Users/Sabella/dev/gmp/web/dump.txt", "w");
+//fwrite($fp, $dump);
+//fclose($fp);
+//echo "</pre>";
+//echo "";
+*/
+{/php}
+
 {literal}
 
     <script src="http://www.google.com/jsapi?key=AIzaSyBBadLaxIFVsyvzOfRQ4QUzD-B_DIjPYyU"></script> 
@@ -22,6 +60,11 @@
         map = new google.maps.Map(document.getElementById('map'), myOptions);
 
 {/literal}{php}
+//echo "/*";
+//$x=get_defined_vars();
+//print_r($x);
+//echo "*/";
+
         echo "var polys=['";
 
         $DataGrid=$this->get_template_vars('DataGrid');

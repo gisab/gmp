@@ -19,7 +19,7 @@ function GetGlobalConnectionOptions()
 {
     return array(
   'server' => '127.0.0.1',
-  'port' => '8889',
+  'port' => '3306',
   'username' => 'admin',
   'password' => 'admin',
   'database' => 'gmp'
@@ -38,6 +38,12 @@ function GetPageInfos()
     $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue');
     $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files');
     $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent');
+    $result[] = array('caption' => 'Statistics', 'short_caption' => 'Statistics', 'filename' => 'vqueue_stats.php', 'name' => 'vqueue_stats');
+    $result[] = array('caption' => 'Errors', 'short_caption' => 'Errors', 'filename' => 'vqueue_nok.php', 'name' => 'vqueue_nok');
+    $result[] = array('caption' => 'Last Hour', 'short_caption' => 'Queue changed in the Last hour', 'filename' => 'vqueue_lasthour.php', 'name' => 'vqueue_lasthour');
+    $result[] = array('caption' => 'Downloading', 'short_caption' => 'Downloading queue', 'filename' => 'vqueue_downloading.php', 'name' => 'vqueue_downloading');
+    $result[] = array('caption' => 'Country', 'short_caption' => 'Country', 'filename' => 'country.php', 'name' => 'country');
+    $result[] = array('caption' => 'Target', 'short_caption' => 'Target', 'filename' => 'target.php', 'name' => 'target');
     return $result;
 }
 
