@@ -343,6 +343,10 @@ class queuedItem(object):
         self.last_update=rec[6]
         self.closeStatus=closeStatus
         
+        #Get the target characteristic
+        self.connection=dbif.getTargetList("id='%s'" % self.targetid)[0]
+        self.targettype=self.connection['type']
+
         #Get the download agent characteristic
         qry="SELECT ID, cli FROM agent where id='%s';" % self.agentid
         self.db.cur.execute(qry)
@@ -379,15 +383,15 @@ class queuedItem(object):
         pass
 
     def getMetalink(self):
-        plugin=pluginClass.getPlugin(self.targetid)
+        plugin=pluginClass.getPlugin(self.targettype,self.connection)
         self.getMetalink=plugin.getMetalink(self)
 
     def getMetadata(self):
-        plugin=pluginClass.getPlugin(self.targetid)
+        plugin=pluginClass.getPlugin(self.targettype,self.connection)
         self.getMetadata=plugin.getMetadata(self)
 
     def parseMetadata(self):
-        plugin=pluginClass.getPlugin(self.targetid)
+        plugin=pluginClass.getPlugin(self.targettype,self.connection)
         self.parseMetadata=plugin.parseMetadata(self)
 
     ##Set new status for the object
@@ -424,7 +428,7 @@ class queuedItem(object):
     
     ## Search for the manifest and create file and xml handlers
     def openManifest(self):
-        if self.targetid=='dhus':
+        if self.targettype=='dhus':
             #open zipfile
             import zipfile
             archive = zipfile.ZipFile(rep+self.files[0]['filename'], 'r')
@@ -436,7 +440,7 @@ class queuedItem(object):
                     self.manifestParser=etree.fromstring(manifest)
                     break
             return
-        if self.targetid=='oda':
+        if self.targettype=='oda':
             for i in self.files:
                 if 'manifest' in i['filename'].lower():
                     print 'manifest: %s' % i['filename']
@@ -486,7 +490,7 @@ class queuedItem(object):
 
     ## Search for the manifest and create file and xml handlers
     def openDhusMetadata(self):
-        assert self.targetid=='dhus'
+        assert self.targettype=='dhus'
         dhusMetadataRepository=config.ini.get('pluginDhus','dhusmetadatarepository').replace('$PRJ',prjFolder)
         for i in self.files:
             if 'xml' in i['filename'].lower():
@@ -704,6 +708,20 @@ def process(id):
             traceback.print_exc(file=sys.stdout)
             x.setStatus('NOK')
     pass
+
+def checkConnectionParameters(connection):
+    if not isinstance(connection,dict):
+        print "connection is %s and not a dictionary" % type(connection)
+        return False
+    check=True
+    for parameter in ['id','type','host','protocol','port','username','password','rep']:
+        if parameter not in connection.keys():
+            print "parameter %s not found in connection.keys()" % parameter
+            check=False
+        if connection[parameter] in ('','None','Null','#'):
+            print "parameter %s not initialized (found %s)" % connection[parameter]
+            check=False
+    return check
 
 def gml2wkt(gml):
     tmp=gml.replace(',','/').replace(' ',',').replace('/',' ')

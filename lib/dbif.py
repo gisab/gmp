@@ -10,12 +10,13 @@
 #                                                         #
 ###########################################################
 
-prjName='gmp'
+import sys,os
+thisFolder=os.path.dirname(__file__)
+prjFolder=os.path.split(thisFolder)[0]
+sys.path.append(prjFolder+'/lib')
 
 import MySQLdb
 import config
-import sys,os,argparse
-import logging
 
 ## Generic cursor 
 # Establish a connection with the db and return a read only cursor
@@ -25,16 +26,16 @@ import logging
 class gencur(object):
     ## The constructor.
     def __init__(self,sqlbody="#"):
-        cuser  =config.ini.get('dbif','user')
-        cpwd   =config.ini.get('dbif','password')
-        chost  =config.ini.get('dbif','host')
-        cschema=config.ini.get('dbif','schema')
+        cuser  =config.ini.get('dbif','dbuser')
+        cpwd   =config.ini.get('dbif','dbpassword')
+        chost  =config.ini.get('dbif','dbhost')
+        cschema=config.ini.get('dbif','dbschema')
         try:
             if chost=='localhost':
-                csocket=config.ini.get('dbif','socket')
+                csocket=config.ini.get('dbif','dbsocket')
                 self.connection = MySQLdb.connect(host='localhost',unix_socket = csocket,user=cuser,passwd = cpwd)
             else:
-                cport  =int(config.ini.get('dbif','port'))
+                cport  =int(config.ini.get('dbif','dbport'))
                 #self.connection = MySQLdb.connect(host=chost,port=cport,db=cschema,user=cuser,passwd = cpwd)
                 self.connection = MySQLdb.connect(host=chost,port=cport,user=cuser,passwd = cpwd)
         except:
@@ -59,8 +60,6 @@ class gencur(object):
     def createdb(self):
         import os
         #getting directory
-        currDir=os.path.realpath(__file__)
-        prjFolder=currDir.split(prjName)[0]+prjName
         dumpfiles=['gmp-schema.sql', 'gmp-tab.sql']
         
         cuser  =config.ini.get('dbif','user')
@@ -79,6 +78,30 @@ class gencur(object):
             except:
                 print"Error importing %s " % ifile
                 raise
+
+def getTargetList(filter='#'):
+    if filter!='#':
+        qwhere=" where %s " % filter
+    else:
+        qwhere=''
+    qry="SELECT id, type, hostname, username, `password`, rep, protocol, port FROM target " + qwhere
+    db=gencur(qry)
+    res=db.cur.fetchall()
+    ret=list()
+    for irec in res:
+        icon=dict()
+        icon['id']       =irec[0]
+        icon['type']     =irec[1]
+        icon['host']     =irec[2]
+        icon['username'] =irec[3]
+        icon['password'] =irec[4]
+        icon['rep']      =irec[5].replace('$PRJ',prjFolder)
+        icon['protocol'] =irec[6]
+        icon['port']     =irec[7]
+        ret.append(icon)
+    #import pprint
+    #pprint.pprint(ret)
+    return ret
 
 ## setObject Store an object into MySQL master db
 # @param iobj input object

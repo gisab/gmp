@@ -18,7 +18,7 @@ SystemUtils::SetTimeZoneIfNeed('Europe/Belgrade');
 function GetGlobalConnectionOptions()
 {
     return array(
-  'server' => '192.168.56.1',
+  'server' => '127.0.0.1',
   'port' => '8889',
   'username' => 'admin',
   'password' => 'admin',

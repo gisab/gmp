@@ -53,18 +53,18 @@ class gmpPlugin(object):
         return
     
     
-def getPlugin(target):
+def getPlugin(target,connection):
     if target=='dhus':
         import pluginDhus
-        x=pluginDhus.gmpPluginDhus()
+        x=pluginDhus.gmpPluginDhus(connection)
         return x
     if target=='oda':
         import pluginOda
-        x=pluginOda.gmpPluginOda()
+        x=pluginOda.gmpPluginOda(connection)
         return x
     if target=='lfs':
         import pluginLocalFS
-        x=pluginLocalFS.gmpPluginLFS()
+        x=pluginLocalFS.gmpPluginLFS(connection)
         return x
     raise Exception('getPlugin', 'Target %s for product %s is unknown' % (target, queuedItem.id) )
     return

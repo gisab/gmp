@@ -22,6 +22,7 @@ prjFolder=currDir.split(prjName)[0]+prjName
 sys.path.append(prjFolder+'/lib')
 from lxml import etree
 import pluginClass
+import dbif
 import libQueue
 import httplib, urllib
 import config
@@ -33,13 +34,13 @@ import json
 import traceback
 
 #config
-host     = config.ini.get(APPID,'host')
-protocol = config.ini.get(APPID,'protocol')
-port     = config.ini.get(APPID,'port')
+#host     = config.ini.get(APPID,'host')
+#protocol = config.ini.get(APPID,'protocol')
+#port     = config.ini.get(APPID,'port')
+#username = config.ini.get(APPID,'username')
+#password = config.ini.get(APPID,'password')
 url      = config.ini.get(APPID,'url')
 urlmeta  = config.ini.get(APPID,'urlmeta')
-username = config.ini.get(APPID,'username')
-password = config.ini.get(APPID,'password')
 agent    = config.ini.get(APPID,'agent')
 metadatafile=config.getPath(APPID,'metadatafile')
 resourcefile=config.getPath(APPID,'resourcefile')
@@ -51,15 +52,25 @@ debug    = True
 class gmpPluginDhus(pluginClass.gmpPlugin):
     
     ## The constructor
-    def __init__(self):
-        self.type='dhus'
+    def __init__(self,connection):
+        if not libQueue.checkConnectionParameters(connection):
+            raise "connection object was not valid"
+        self.id      =connection['id']
+        self.type    =connection['type']
+        assert self.type=='dhus'
+        self.username=connection['username']
+        self.password=connection['password']
+        self.protocol=connection['protocol']
+        self.port    =connection['port']
+        self.host    =connection['host']
+        
         self.plan=list()
-        auth = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
+        auth = base64.encodestring('%s:%s' % (self.username, self.password)).replace('\n', '')
         self.headers = { 'Authorization' : 'Basic %s' %  auth }
-        if protocol=='http':
-            self.conn = httplib.HTTPConnection(host,port)
-        if protocol=='https':
-            self.conn = httplib.HTTPSConnection(host,port)
+        if self.protocol=='http':
+            self.conn = httplib.HTTPConnection(self.host,self.port)
+        if self.protocol=='https':
+            self.conn = httplib.HTTPSConnection(self.host,self.port)
         
     ## Ovverride of the generic downloadPlan function
     # @param self The object pointer
@@ -145,7 +156,7 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
             newItem.setID(fname[:-4]+'.SAFE')
             newItem.addFile(fname,furl)
             newItem.setAgent(agent)
-            newItem.setTarget(self.type)
+            newItem.setTarget(self.id)
             #note={'xml':etree.tostring(prod)}
             newItem.setNote(json.dumps(note))
             self.plan.append(newItem)
@@ -204,10 +215,9 @@ def testworkflow():
     q=libQueue.queue()
     del q
     
-    getNewPlan=True
-    if getNewPlan:
-        #q=libQueue.queue(init='new')
-        x=gmpPluginDhus()
+    targets=dbif.getTargetList("type='dhus'")
+    for itarget in targets:
+        x=gmpPluginDhus(itarget)
         x.getPlan()
         #x.storePlan()
         del x
