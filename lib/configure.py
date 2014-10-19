@@ -25,7 +25,7 @@ php_setting=config.getPath(APPID,'php_setting')
 
 dbhost      ='127.0.0.1'
 dbschema    ='gmp'
-dbport      ='8889'
+dbport      ='3306'
 dbuser      ='admin'
 dbpassword  ='admin'
 

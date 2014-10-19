@@ -62,11 +62,11 @@ class gencur(object):
         #getting directory
         dumpfiles=['gmp-schema.sql', 'gmp-tab.sql']
         
-        cuser  =config.ini.get('dbif','user')
-        cpwd   =config.ini.get('dbif','password')
-        chost  =config.ini.get('dbif','host')
-        cschema=config.ini.get('dbif','schema')
-        cport  =int(config.ini.get('dbif','port'))
+        cuser  =config.ini.get('dbif','dbuser')
+        cpwd   =config.ini.get('dbif','dbpassword')
+        chost  =config.ini.get('dbif','dbhost')
+        cschema=config.ini.get('dbif','dbschema')
+        cport  =int(config.ini.get('dbif','dbport'))
         
         for idump in dumpfiles:
             ifile=prjFolder+'/db/'+idump
