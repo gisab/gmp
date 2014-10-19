@@ -83,6 +83,7 @@ CREATE TABLE `target` (
   `username` varchar(64) NOT NULL,
   `password` varchar(64) NOT NULL,
   `protocol` varchar(10) NOT NULL DEFAULT 'http:80',
+  `port` int(11) NOT NULL,
   `rep` varchar(256) NOT NULL DEFAULT '$PRJ/rep/',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -94,7 +95,7 @@ CREATE TABLE `target` (
 
 LOCK TABLES `target` WRITE;
 /*!40000 ALTER TABLE `target` DISABLE KEYS */;
-INSERT INTO `target` VALUES ('cgs1oda','oda','131.176.233.8','myusername','password','http:80','$PRJ/rep/cgs1'),('cgs2oda','oda','131.176.233.72','myusername','password','http:80','$PRJ/rep/cgs2'),('pac1oda','oda','131.176.234.8','myusername','password','http:80','$PRJ/rep/pac1'),('scihub','dhus','131.176.236.10','myusername','password','http:80','$PRJ/rep/scihub');
+INSERT INTO `target` VALUES ('cgs1oda','oda','131.176.233.8','myusername','password','http',80,'$PRJ/rep/cgs1'),('cgs2oda','oda','131.176.233.72','myusername','password','http',80,'$PRJ/rep/cgs2'),('pac1oda','oda','131.176.234.8','myusername','password','http',80,'$PRJ/rep/pac1'),('scihub','dhus','131.176.236.10','myusername','password','https',443,'$PRJ/rep/scihub');
 /*!40000 ALTER TABLE `target` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -111,4 +112,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-18 20:53:06
+-- Dump completed on 2014-10-19 20:52:27

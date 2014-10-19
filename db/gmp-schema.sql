@@ -67,7 +67,7 @@ CREATE TABLE `files` (
   KEY `qid` (`qid`),
   KEY `qid_2` (`qid`,`targetid`),
   CONSTRAINT `fk` FOREIGN KEY (`qid`, `targetid`) REFERENCES `queue` (`id`, `targetid`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=124824 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -158,8 +158,7 @@ CREATE TABLE `queue` (
   KEY `iid` (`id`) USING BTREE,
   KEY `ipid` (`pid`) USING BTREE,
   KEY `istatus` (`status`) USING BTREE,
-  KEY `dstatus` (`dwnstatus`) USING BTREE,
-  CONSTRAINT `fk1` FOREIGN KEY (`id`) REFERENCES `product` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `dstatus` (`dwnstatus`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -216,6 +215,7 @@ CREATE TABLE `target` (
   `username` varchar(64) NOT NULL,
   `password` varchar(64) NOT NULL,
   `protocol` varchar(10) NOT NULL DEFAULT 'http:80',
+  `port` int(11) NOT NULL,
   `rep` varchar(256) NOT NULL DEFAULT '$PRJ/rep/',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -470,4 +470,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-18 20:53:06
+-- Dump completed on 2014-10-19 20:52:27
