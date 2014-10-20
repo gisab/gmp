@@ -638,7 +638,7 @@ def parallelWorkflow():
         x=q.getItem(lockpid=pid,fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata)
         if x=="#":
             break
-        cmd="/usr/bin/python libQueue.py --id %s" % x.id
+        cmd=sys.argv[0] +" " + prjFolder + "/lib/libQueue.py --id %s" % x.id
         del x
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
