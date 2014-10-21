@@ -280,8 +280,8 @@ class queue(object):
                 #completed a loop on all available item
                 #exit from this loop
                 break
-            if y.product.wkt not in (None, '','#'):
-                #Product already extracted
+            if ('POLYGON' in y.product.footprint.upper()) or ('LINESTRING' in y.product.footprint.upper()):
+                #Product footprint already extracted
                 #probably the product is found on more than one target and metadata have been alreadt extracted by other target plugin.
                 #Do nothing and mark product as processed
                 y.close()
@@ -475,16 +475,27 @@ class queuedItem(object):
             for itag in ('orbitNumber','relativeOrbitNumber'):
                 val=self.manifestParser.find('.//{*}'+itag).text
                 self.product.addJson({itag:val})
+            #get product size
+            self.size=0
+            for istream in self.manifestParser.findall('.//{*}byteStream'):
+                try:
+                    size=int(istream.attrib['size'])
+                except:
+                    print "Not able to extract size information"
+                    size=0
+                self.size+=size
+            pass
     
     def storeManifestMetadata(self):
-        kmlraw                =config.ini.get('kml','kmlraw').replace('\n','')
-        kml=gml2gml_swap(self.coordinatesKML)
-        kmlraw=kmlraw.replace('$COORD',kml)
-        kmlraw=kmlraw.replace('$NAME',self.id)
-        kmlraw=kmlraw.replace('$TSTART',self.product.json['startTime'])
-        kmlraw=kmlraw.replace('$TSTOP' ,self.product.json['stopTime'])
-        kmlbody=kmlraw
-        qry="UPDATE product set kml='%s', wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (kmlbody, self.coordinatesWKT, self.coordinatesWKT, self.id)
+        #kmlraw                =config.ini.get('kml','kmlraw').replace('\n','')
+        #kml=gml2gml_swap(self.coordinatesKML)
+        #kmlraw=kmlraw.replace('$COORD',kml)
+        #kmlraw=kmlraw.replace('$NAME',self.id)
+        #kmlraw=kmlraw.replace('$TSTART',self.product.json['startTime'])
+        #kmlraw=kmlraw.replace('$TSTOP' ,self.product.json['stopTime'])
+        #kmlbody=kmlraw
+        #qry="UPDATE product set kml='%s', wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (kmlbody, self.coordinatesWKT, self.coordinatesWKT, self.id)
+        qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (self.size, self.coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
 

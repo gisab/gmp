@@ -47,9 +47,9 @@ class product(object):
         pass
     
     def getProduct(self,productID):
-        fields=('id','producttype','start','stop','duration','orbit','crc','kml','footprint','polarization','wkt','tags','json')
+        fields=('id','producttype','start','stop','duration','orbit','crc','footprint','polarization','tags','json')
         qry='`, `'.join(fields)
-        qry='SELECT `' + qry + "` from product where id='%s';" % productID
+        qry='SELECT `' + qry + "`, AsText(footprint) from product where id='%s';" % productID
         self.db.cur.execute(qry)
         rec=self.db.cur.fetchone()
         if rec==None:
@@ -60,6 +60,7 @@ class product(object):
         for field in fields:
             self.__setattr__(field,rec[i])
             i+=1
+        self.__setattr__('footprint',rec[i])
         pass
         if self.tags!=None and self.tags!='':
             self.tags=self.tags.split(',')
