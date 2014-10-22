@@ -124,7 +124,7 @@ def main():
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
         cmd=cmd.replace('$','%24')
         #temporary network patch
-        if True:
+        if False:
             cmd=cmd.replace('s1-pac1dmz-oda-v-20.sentinel1.eo.esa.int:80','localhost:14002')
             print cmd
         log(cmd)

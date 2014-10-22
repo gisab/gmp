@@ -70,8 +70,8 @@ function recursive($array, $level = 1){
         $DataGrid=$this->get_template_vars('DataGrid');
 
         foreach ($DataGrid['Rows'] as $row){
-           if ($row['DataCells']['kml']['Data']!='#'){
-              echo $row['DataCells']['wkt']['Data'] ."','";
+           if (substr($row['DataCells']['footprint']['Data'],0,5)!='POINT'){
+              echo $row['DataCells']['footprint']['Data'] ."','";
            }
         }
 

@@ -223,7 +223,7 @@ def testworkflow():
         del x
 
     #Process queue last time in a serial way
-    libQueue.serialWorkflow()
+    #libQueue.serialWorkflow()
     
 if __name__ == "__main__":
     #test()

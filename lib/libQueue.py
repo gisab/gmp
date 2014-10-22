@@ -60,6 +60,8 @@ cDwnStatusCompleted ='C'
 
 rep           =config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
 
+pythonex='/usr/local/bin/python2.7'
+
 class queue(object):
     def __init__(self,init='#'):
         self.getqueue()
@@ -246,7 +248,7 @@ class queue(object):
                 #completed a loop on all available item
                 #exit from this loop
                 break
-            if y.product.wkt not in (None, '','#'):
+            if ('POLYGON' in y.product.footprint.upper()) or ('LINESTRING' in y.product.footprint.upper()):
                 #Product already extracted
                 #probably the product is found on more than one target and metadata have been alreadt extracted by other target plugin.
                 #Do nothing and mark product as processed
@@ -649,7 +651,7 @@ def parallelWorkflow():
         x=q.getItem(lockpid=pid,fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata)
         if x=="#":
             break
-        cmd=sys.argv[0] +" " + prjFolder + "/lib/libQueue.py --id %s" % x.id
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/%s.log 2>%s/log/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
         del x
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
@@ -686,9 +688,11 @@ def process(id):
         break
 
     x.setPid(pid)
-    
-    if x.status in (cnew):
+    print "processing product %s" % id
+    #print x.status, cnew
+    if x.status.upper() in (cnew, ):
         try:
+            print "getting metalink" 
             x.getMetalink()
             x.setStatus(chasmetalink)
         except:
@@ -697,6 +701,7 @@ def process(id):
 
     if x.status in (chasmetalink):
         try:
+            print "getting metadata"
             x.getMetadata()
             x.setStatus(chasmetadata)
         except:
@@ -705,6 +710,7 @@ def process(id):
     
     if x.status in (chasmetadata):
         try:
+            print "parse metadata"
             x.parseMetadata()
             x.setStatus(cmetadataparsed)
         except:
@@ -713,6 +719,7 @@ def process(id):
 
     if x.status in (cmetadataparsed):
         try:
+            print "catalouging" 
             x.product.catalogue()
             x.setStatus(ccatalogued)
         except:

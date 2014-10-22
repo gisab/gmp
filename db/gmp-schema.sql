@@ -238,3 +238,189 @@ SET character_set_client = utf8;
   `LAST_UPDATE` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `vqueue_downloading`
+--
+
+DROP TABLE IF EXISTS `vqueue_downloading`;
+/*!50001 DROP VIEW IF EXISTS `vqueue_downloading`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `vqueue_downloading` (
+  `id` tinyint NOT NULL,
+  `note` tinyint NOT NULL,
+  `status` tinyint NOT NULL,
+  `dwnstatus` tinyint NOT NULL,
+  `LAST_UPDATE` tinyint NOT NULL,
+  `pid` tinyint NOT NULL,
+  `agentid` tinyint NOT NULL,
+  `targetid` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `vqueue_lasthour`
+--
+
+DROP TABLE IF EXISTS `vqueue_lasthour`;
+/*!50001 DROP VIEW IF EXISTS `vqueue_lasthour`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `vqueue_lasthour` (
+  `id` tinyint NOT NULL,
+  `note` tinyint NOT NULL,
+  `status` tinyint NOT NULL,
+  `LAST_UPDATE` tinyint NOT NULL,
+  `pid` tinyint NOT NULL,
+  `agentid` tinyint NOT NULL,
+  `targetid` tinyint NOT NULL,
+  `dwnstatus` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `vqueue_nok`
+--
+
+DROP TABLE IF EXISTS `vqueue_nok`;
+/*!50001 DROP VIEW IF EXISTS `vqueue_nok`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `vqueue_nok` (
+  `id` tinyint NOT NULL,
+  `note` tinyint NOT NULL,
+  `status` tinyint NOT NULL,
+  `dwnstatus` tinyint NOT NULL,
+  `LAST_UPDATE` tinyint NOT NULL,
+  `pid` tinyint NOT NULL,
+  `agentid` tinyint NOT NULL,
+  `targetid` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `vqueue_stats`
+--
+
+DROP TABLE IF EXISTS `vqueue_stats`;
+/*!50001 DROP VIEW IF EXISTS `vqueue_stats`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `vqueue_stats` (
+  `targetid` tinyint NOT NULL,
+  `status` tinyint NOT NULL,
+  `dwnstatus` tinyint NOT NULL,
+  `nrec` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping routines for database 'gmp-ref'
+--
+
+--
+-- Final view structure for view `vfiles_lasthour`
+--
+
+/*!50001 DROP TABLE IF EXISTS `vfiles_lasthour`*/;
+/*!50001 DROP VIEW IF EXISTS `vfiles_lasthour`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vfiles_lasthour` AS select `files`.`id` AS `id`,`files`.`qid` AS `qid`,`files`.`targetid` AS `targetid`,`files`.`filename` AS `filename`,`files`.`url` AS `url`,`files`.`dwnstatus` AS `dwnstatus`,`files`.`LAST_UPDATE` AS `LAST_UPDATE` from `files` where (`files`.`LAST_UPDATE` > (now() - interval 1 hour)) order by `files`.`LAST_UPDATE` desc */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vqueue_downloading`
+--
+
+/*!50001 DROP TABLE IF EXISTS `vqueue_downloading`*/;
+/*!50001 DROP VIEW IF EXISTS `vqueue_downloading`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vqueue_downloading` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`dwnstatus` AS `dwnstatus`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid` from `queue` where (`queue`.`dwnstatus` = 'Q') order by `queue`.`LAST_UPDATE` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vqueue_lasthour`
+--
+
+/*!50001 DROP TABLE IF EXISTS `vqueue_lasthour`*/;
+/*!50001 DROP VIEW IF EXISTS `vqueue_lasthour`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vqueue_lasthour` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid`,`queue`.`dwnstatus` AS `dwnstatus` from `queue` where (`queue`.`LAST_UPDATE` > (now() - interval 1 hour)) order by `queue`.`LAST_UPDATE` desc */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vqueue_nok`
+--
+
+/*!50001 DROP TABLE IF EXISTS `vqueue_nok`*/;
+/*!50001 DROP VIEW IF EXISTS `vqueue_nok`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vqueue_nok` AS select `queue`.`id` AS `id`,`queue`.`note` AS `note`,`queue`.`status` AS `status`,`queue`.`dwnstatus` AS `dwnstatus`,`queue`.`LAST_UPDATE` AS `LAST_UPDATE`,`queue`.`pid` AS `pid`,`queue`.`agentid` AS `agentid`,`queue`.`targetid` AS `targetid` from `queue` where ((`queue`.`status` = 'NOK') or (`queue`.`pid` is not null)) order by `queue`.`pid`,`queue`.`LAST_UPDATE` desc */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vqueue_stats`
+--
+
+/*!50001 DROP TABLE IF EXISTS `vqueue_stats`*/;
+/*!50001 DROP VIEW IF EXISTS `vqueue_stats`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vqueue_stats` AS select `queue`.`targetid` AS `targetid`,`queue`.`status` AS `status`,`queue`.`dwnstatus` AS `dwnstatus`,count(`queue`.`id`) AS `nrec` from `queue` group by `queue`.`status`,`queue`.`dwnstatus`,`queue`.`targetid` order by `queue`.`targetid`,`queue`.`status` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-10-22 12:06:45
