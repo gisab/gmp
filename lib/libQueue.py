@@ -651,7 +651,7 @@ def parallelWorkflow():
         x=q.getItem(lockpid=pid,fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata)
         if x=="#":
             break
-        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/%s.log 2>%s/log/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
         del x
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
