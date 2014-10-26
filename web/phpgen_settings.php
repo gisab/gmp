@@ -37,6 +37,7 @@ function GetPageInfos()
     $result[] = array('caption' => 'Product Catalogue', 'short_caption' => 'Product Catalogue', 'filename' => 'product.php', 'name' => 'qProduct');
     $result[] = array('caption' => 'Product_old', 'short_caption' => 'Product Catalogue Old', 'filename' => 'productold.php', 'name' => 'test');
     $result[] = array('caption' => 'Target', 'short_caption' => 'Target', 'filename' => 'target.php', 'name' => 'target');
+    $result[] = array('caption' => 'Country', 'short_caption' => 'Country', 'filename' => 'Country.php', 'name' => 'vcountry');
     $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue');
     $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files');
     $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent');
@@ -44,7 +45,6 @@ function GetPageInfos()
     $result[] = array('caption' => 'Errors', 'short_caption' => 'Errors', 'filename' => 'vqueue_nok.php', 'name' => 'vqueue_nok');
     $result[] = array('caption' => 'Last Hour', 'short_caption' => 'Queue changed in the Last hour', 'filename' => 'vqueue_lasthour.php', 'name' => 'vqueue_lasthour');
     $result[] = array('caption' => 'Downloading', 'short_caption' => 'Downloading queue', 'filename' => 'vqueue_downloading.php', 'name' => 'vqueue_downloading');
-    $result[] = array('caption' => 'Country', 'short_caption' => 'Country', 'filename' => 'country.php', 'name' => 'country');
     return $result;
 }
 

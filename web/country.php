@@ -33,35 +33,26 @@
     
     
     
-    class filesPage extends Page
+    class countryPage extends Page
     {
         protected function DoBeforeCreate()
         {
             $this->dataset = new TableDataset(
                 new MyConnectionFactory(),
                 GetConnectionOptions(),
-                '`files`');
+                '`country`');
             $field = new IntegerField('id', null, null, true);
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
-            $field = new StringField('qid');
+            $field = new StringField('name');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('filename');
+            $field = new StringField('wkt');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('url');
+            $field = new StringField('geom');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('dwnstatus');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
-            $field = new DateTimeField('LAST_UPDATE');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
-            $field = new StringField('targetid');
-            $this->dataset->AddField($field, false);
-            $this->dataset->AddLookupField('qid', 'queue', new StringField('id'), new StringField('note', 'qid_note', 'qid_note_queue'), 'qid_note_queue');
         }
     
         protected function CreatePageNavigator()
@@ -115,9 +106,9 @@
         protected function CreateGridSearchControl(Grid $grid)
         {
             $grid->UseFilter = true;
-            $grid->SearchControl = new SimpleSearch('filesssearch', $this->dataset,
-                array('id', 'qid', 'filename', 'url'),
-                array($this->RenderText('Id'), $this->RenderText('Qid'), $this->RenderText('Filename'), $this->RenderText('Url')),
+            $grid->SearchControl = new SimpleSearch('countryssearch', $this->dataset,
+                array('id', 'name', 'wkt', 'geom'),
+                array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('Wkt'), $this->RenderText('Geom')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -135,12 +126,12 @@
     
         protected function CreateGridAdvancedSearchControl(Grid $grid)
         {
-            $this->AdvancedSearchControl = new AdvancedSearchControl('filesasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
+            $this->AdvancedSearchControl = new AdvancedSearchControl('countryasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
             $this->AdvancedSearchControl->setTimerInterval(1000);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('qid', $this->RenderText('Qid')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('filename', $this->RenderText('Filename')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('url', $this->RenderText('Url')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('name', $this->RenderText('Name')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('wkt', $this->RenderText('Wkt')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('geom', $this->RenderText('Geom')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -160,19 +151,19 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for qid field
+            // View column for name field
             //
-            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('qid_handler');
             
             /* <inline edit column> */
             //
-            // Edit column for qid field
+            // Edit column for name field
             //
-            $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
+            $editor = new TextEdit('name_edit');
+            $editor->SetSize(20);
+            $editor->SetMaxLength(20);
+            $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -181,10 +172,12 @@
             
             /* <inline insert column> */
             //
-            // Edit column for qid field
+            // Edit column for name field
             //
-            $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
+            $editor = new TextEdit('name_edit');
+            $editor->SetSize(20);
+            $editor->SetMaxLength(20);
+            $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -195,19 +188,19 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for filename field
+            // View column for wkt field
             //
-            $column = new TextViewColumn('filename', 'Filename', $this->dataset);
+            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
             $column->SetOrderable(true);
             $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('filename_handler');
+            $column->SetFullTextWindowHandlerName('wkt_handler');
             
             /* <inline edit column> */
             //
-            // Edit column for filename field
+            // Edit column for wkt field
             //
-            $editor = new TextAreaEdit('filename_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Filename', 'filename', $editor, $this->dataset);
+            $editor = new TextAreaEdit('wkt_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -216,10 +209,10 @@
             
             /* <inline insert column> */
             //
-            // Edit column for filename field
+            // Edit column for wkt field
             //
-            $editor = new TextAreaEdit('filename_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Filename', 'filename', $editor, $this->dataset);
+            $editor = new TextAreaEdit('wkt_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -230,19 +223,17 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for url field
+            // View column for geom field
             //
-            $column = new TextViewColumn('url', 'Url', $this->dataset);
+            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
             $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('url_handler');
             
             /* <inline edit column> */
             //
-            // Edit column for url field
+            // Edit column for geom field
             //
-            $editor = new TextAreaEdit('url_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Url', 'url', $editor, $this->dataset);
+            $editor = new TextEdit('geom_edit');
+            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -251,10 +242,10 @@
             
             /* <inline insert column> */
             //
-            // Edit column for url field
+            // Edit column for geom field
             //
-            $editor = new TextAreaEdit('url_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Url', 'url', $editor, $this->dataset);
+            $editor = new TextEdit('geom_edit');
+            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -275,60 +266,58 @@
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for qid field
+            // View column for name field
             //
-            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('qid_handler');
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for filename field
+            // View column for wkt field
             //
-            $column = new TextViewColumn('filename', 'Filename', $this->dataset);
+            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
             $column->SetOrderable(true);
             $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('filename_handler');
+            $column->SetFullTextWindowHandlerName('wkt_handler');
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for url field
+            // View column for geom field
             //
-            $column = new TextViewColumn('url', 'Url', $this->dataset);
+            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
             $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('url_handler');
             $grid->AddSingleRecordViewColumn($column);
         }
     
         protected function AddEditColumns(Grid $grid)
         {
             //
-            // Edit column for qid field
+            // Edit column for name field
             //
-            $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
+            $editor = new TextEdit('name_edit');
+            $editor->SetSize(20);
+            $editor->SetMaxLength(20);
+            $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
             
             //
-            // Edit column for filename field
+            // Edit column for wkt field
             //
-            $editor = new TextAreaEdit('filename_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Filename', 'filename', $editor, $this->dataset);
+            $editor = new TextAreaEdit('wkt_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
             
             //
-            // Edit column for url field
+            // Edit column for geom field
             //
-            $editor = new TextAreaEdit('url_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Url', 'url', $editor, $this->dataset);
+            $editor = new TextEdit('geom_edit');
+            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -338,30 +327,32 @@
         protected function AddInsertColumns(Grid $grid)
         {
             //
-            // Edit column for qid field
+            // Edit column for name field
             //
-            $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
+            $editor = new TextEdit('name_edit');
+            $editor->SetSize(20);
+            $editor->SetMaxLength(20);
+            $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for filename field
+            // Edit column for wkt field
             //
-            $editor = new TextAreaEdit('filename_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Filename', 'filename', $editor, $this->dataset);
+            $editor = new TextAreaEdit('wkt_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for url field
+            // Edit column for geom field
             //
-            $editor = new TextAreaEdit('url_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Url', 'url', $editor, $this->dataset);
+            $editor = new TextEdit('geom_edit');
+            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -388,23 +379,23 @@
             $grid->AddPrintColumn($column);
             
             //
-            // View column for note field
+            // View column for name field
             //
-            $column = new TextViewColumn('qid_note', 'Qid', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for filename field
+            // View column for wkt field
             //
-            $column = new TextViewColumn('filename', 'Filename', $this->dataset);
+            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for url field
+            // View column for geom field
             //
-            $column = new TextViewColumn('url', 'Url', $this->dataset);
+            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
         }
@@ -419,23 +410,23 @@
             $grid->AddExportColumn($column);
             
             //
-            // View column for note field
+            // View column for name field
             //
-            $column = new TextViewColumn('qid_note', 'Qid', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for filename field
+            // View column for wkt field
             //
-            $column = new TextViewColumn('filename', 'Filename', $this->dataset);
+            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for url field
+            // View column for geom field
             //
-            $column = new TextViewColumn('url', 'Url', $this->dataset);
+            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
         }
@@ -463,7 +454,7 @@
     
         protected function CreateGrid()
         {
-            $result = new Grid($this, $this->dataset, 'filesGrid');
+            $result = new Grid($this, $this->dataset, 'countryGrid');
             if ($this->GetSecurityInfo()->HasDeleteGrant())
                $result->SetAllowDeleteSelected(false);
             else
@@ -507,17 +498,17 @@
             // Http Handlers
             //
             //
-            // View column for qid field
+            // View column for wkt field
             //
-            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
+            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
             $column->SetOrderable(true);
             
             /* <inline edit column> */
             //
-            // Edit column for qid field
+            // Edit column for wkt field
             //
-            $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
+            $editor = new TextAreaEdit('wkt_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -526,98 +517,22 @@
             
             /* <inline insert column> */
             //
-            // Edit column for qid field
+            // Edit column for wkt field
             //
-            $editor = new ComboBox('qid_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editColumn = new CustomEditColumn('Qid', 'qid', $editor, $this->dataset);
+            $editor = new TextAreaEdit('wkt_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $column->SetInsertOperationColumn($editColumn);
             /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'qid_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for filename field
-            //
-            $column = new TextViewColumn('filename', 'Filename', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for filename field
-            //
-            $editor = new TextAreaEdit('filename_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Filename', 'filename', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for filename field
-            //
-            $editor = new TextAreaEdit('filename_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Filename', 'filename', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'filename_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for url field
-            //
-            $column = new TextViewColumn('url', 'Url', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for url field
-            //
-            $editor = new TextAreaEdit('url_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Url', 'url', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for url field
-            //
-            $editor = new TextAreaEdit('url_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Url', 'url', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'url_handler', $column);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'wkt_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);//
-            // View column for qid field
+            // View column for wkt field
             //
-            $column = new TextViewColumn('qid', 'Qid', $this->dataset);
+            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
             $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'qid_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for filename field
-            //
-            $column = new TextViewColumn('filename', 'Filename', $this->dataset);
-            $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'filename_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for url field
-            //
-            $column = new TextViewColumn('url', 'Url', $this->dataset);
-            $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'url_handler', $column);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'wkt_handler', $column);
             GetApplication()->RegisterHTTPHandler($handler);
             return $result;
         }
@@ -637,12 +552,12 @@
 
     try
     {
-        $Page = new filesPage("files.php", "files", GetCurrentUserGrantForDataSource("files"), 'UTF-8');
-        $Page->SetShortCaption('Files');
+        $Page = new countryPage("country.php", "country", GetCurrentUserGrantForDataSource("country"), 'UTF-8');
+        $Page->SetShortCaption('Country Old');
         $Page->SetHeader(GetPagesHeader());
         $Page->SetFooter(GetPagesFooter());
-        $Page->SetCaption('Files');
-        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("files"));
+        $Page->SetCaption('Country Old');
+        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("country"));
         GetApplication()->SetEnableLessRunTimeCompile(GetEnableLessFilesRunTimeCompilation());
         GetApplication()->SetCanUserChangeOwnPassword(
             !function_exists('CanUserChangeOwnPassword') || CanUserChangeOwnPassword());
