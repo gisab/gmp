@@ -5,7 +5,7 @@ GMP, also known as 'Get My Products' is a GPL free software which allows you to 
 
 For downloading and using the Copernicus Sentinels Imagery you need to be registered at https://scihub.esa.int.
 
-The registration is free and implies you agree with the "TERMS AND CONDITIONS FOR THE USE AND DISTRIBUTION OF SENTINEL DATA" (https://sentinel.esa.int/documents/247904/690755/TC_Sentinel_Data_31072014.pdf).
+The registration is free and implies you agree with the [TERMS AND CONDITIONS FOR THE USE AND DISTRIBUTION OF SENTINEL DATA] (https://sentinel.esa.int/documents/247904/690755/TC_Sentinel_Data_31072014.pdf).
 
 INSTALLATION
 ------------
@@ -16,6 +16,7 @@ USE
 ---
 
 a. Downloading imagery metadata
+
 For getting the metadata on the available imagery execute the plugin:
 cd lib
 python ./pluginDhus.py
@@ -23,14 +24,17 @@ and let the program tun till the end.
 At any time you can run this command again to get imagery updates from the scihub server
 
 b. Browsing the catalogue
+
 According to your local httpd configuration and the link you set up in the step 2c, you may access the catalogue with any bworser.
 For example, if you are using MAMP for OSX you can point your browser to:
 http://localhost:8888/gmp/
 
 c. Adding a product in the download queue
+
 To add a product in the download queue you need to click the button QUEUE present into Product and Queue pages
 
 d. Download product in the queue
+
 To download the first product (based on queue request) in the queue you can simply run the on-shot command
 python ./downloader.py
 
@@ -38,6 +42,7 @@ If you want to setup an automatic download daemon, you may use the download mana
 python ./downloadManager.py
 
 e. Accessing the product from your local file system
+
 The downloaded imagery are stored according to the variable 'repository' set into the [downloader] section of the config.ini.
 
 Contacts
