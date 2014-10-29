@@ -1475,7 +1475,7 @@
             if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target')));
             if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Country'), 'Country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country')));
+                $result->AddPage(new PageLink($this->RenderText('Country'), 'country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country')));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue')));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())

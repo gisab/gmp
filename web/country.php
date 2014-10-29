@@ -33,25 +33,28 @@
     
     
     
-    class countryPage extends Page
+    class vcountryPage extends Page
     {
         protected function DoBeforeCreate()
         {
-            $this->dataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`country`');
-            $field = new IntegerField('id', null, null, true);
+            $selectQuery = 'SELECT country.`id`, 
+            country.`name`, 
+            	AsText(country.geom) WKT
+            FROM country';
+            $insertQuery = array();
+            $updateQuery = array();
+            $deleteQuery = array();
+            $this->dataset = new QueryDataset(
+              new MyConnectionFactory(), 
+              GetConnectionOptions(),
+              $selectQuery, $insertQuery, $updateQuery, $deleteQuery, 'vcountry');
+            $field = new IntegerField('id');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
             $field = new StringField('name');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('wkt');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
-            $field = new StringField('geom');
-            $field->SetIsNotNull(true);
+            $field = new StringField('WKT');
             $this->dataset->AddField($field, false);
         }
     
@@ -77,7 +80,7 @@
             if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target')));
             if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Country'), 'Country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country')));
+                $result->AddPage(new PageLink($this->RenderText('Country'), 'country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country')));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue')));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
@@ -106,9 +109,9 @@
         protected function CreateGridSearchControl(Grid $grid)
         {
             $grid->UseFilter = true;
-            $grid->SearchControl = new SimpleSearch('countryssearch', $this->dataset,
-                array('id', 'name', 'wkt', 'geom'),
-                array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('Wkt'), $this->RenderText('Geom')),
+            $grid->SearchControl = new SimpleSearch('vcountryssearch', $this->dataset,
+                array('id', 'name', 'WKT'),
+                array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('WKT')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -126,12 +129,11 @@
     
         protected function CreateGridAdvancedSearchControl(Grid $grid)
         {
-            $this->AdvancedSearchControl = new AdvancedSearchControl('countryasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
+            $this->AdvancedSearchControl = new AdvancedSearchControl('vcountryasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
             $this->AdvancedSearchControl->setTimerInterval(1000);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('name', $this->RenderText('Name')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('wkt', $this->RenderText('Wkt')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('geom', $this->RenderText('Geom')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('WKT', $this->RenderText('WKT')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -146,6 +148,30 @@
             //
             $column = new TextViewColumn('id', 'Id', $this->dataset);
             $column->SetOrderable(true);
+            
+            /* <inline edit column> */
+            //
+            // Edit column for id field
+            //
+            $editor = new SpinEdit('id_edit');
+            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
+            
+            /* <inline insert column> */
+            //
+            // Edit column for id field
+            //
+            $editor = new SpinEdit('id_edit');
+            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetInsertOperationColumn($editColumn);
+            /* </inline insert column> */
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
@@ -161,8 +187,6 @@
             // Edit column for name field
             //
             $editor = new TextEdit('name_edit');
-            $editor->SetSize(20);
-            $editor->SetMaxLength(20);
             $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
@@ -175,8 +199,6 @@
             // Edit column for name field
             //
             $editor = new TextEdit('name_edit');
-            $editor->SetSize(20);
-            $editor->SetMaxLength(20);
             $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
@@ -188,19 +210,17 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for wkt field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('wkt_handler');
             
             /* <inline edit column> */
             //
-            // Edit column for wkt field
+            // Edit column for WKT field
             //
-            $editor = new TextAreaEdit('wkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
+            $editor = new TextEdit('wkt_edit');
+            $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -209,43 +229,10 @@
             
             /* <inline insert column> */
             //
-            // Edit column for wkt field
+            // Edit column for WKT field
             //
-            $editor = new TextAreaEdit('wkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for geom field
-            //
-            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for geom field
-            //
-            $editor = new TextEdit('geom_edit');
-            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for geom field
-            //
-            $editor = new TextEdit('geom_edit');
-            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
+            $editor = new TextEdit('wkt_edit');
+            $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -273,18 +260,9 @@
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for wkt field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('wkt_handler');
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for geom field
-            //
-            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
         }
@@ -292,11 +270,19 @@
         protected function AddEditColumns(Grid $grid)
         {
             //
+            // Edit column for id field
+            //
+            $editor = new SpinEdit('id_edit');
+            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddEditColumn($editColumn);
+            
+            //
             // Edit column for name field
             //
             $editor = new TextEdit('name_edit');
-            $editor->SetSize(20);
-            $editor->SetMaxLength(20);
             $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
@@ -304,20 +290,10 @@
             $grid->AddEditColumn($editColumn);
             
             //
-            // Edit column for wkt field
+            // Edit column for WKT field
             //
-            $editor = new TextAreaEdit('wkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for geom field
-            //
-            $editor = new TextEdit('geom_edit');
-            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
+            $editor = new TextEdit('wkt_edit');
+            $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -327,11 +303,19 @@
         protected function AddInsertColumns(Grid $grid)
         {
             //
+            // Edit column for id field
+            //
+            $editor = new SpinEdit('id_edit');
+            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
             // Edit column for name field
             //
             $editor = new TextEdit('name_edit');
-            $editor->SetSize(20);
-            $editor->SetMaxLength(20);
             $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
@@ -339,20 +323,10 @@
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for wkt field
+            // Edit column for WKT field
             //
-            $editor = new TextAreaEdit('wkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddInsertColumn($editColumn);
-            
-            //
-            // Edit column for geom field
-            //
-            $editor = new TextEdit('geom_edit');
-            $editColumn = new CustomEditColumn('Geom', 'geom', $editor, $this->dataset);
+            $editor = new TextEdit('wkt_edit');
+            $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -386,16 +360,9 @@
             $grid->AddPrintColumn($column);
             
             //
-            // View column for wkt field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
-            // View column for geom field
-            //
-            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
         }
@@ -417,16 +384,9 @@
             $grid->AddExportColumn($column);
             
             //
-            // View column for wkt field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for geom field
-            //
-            $column = new TextViewColumn('geom', 'Geom', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
         }
@@ -451,10 +411,17 @@
         {
             return ;
         }
+        public function vcountryGrid_OnGetCustomTemplate($part, $mode, &$result, &$params)
+        {
+        if ($part == PagePart::Grid && $mode == PageMode::ViewAll)
+         {
+           $result = 'COUNTRY.tpl';
+         }
+        }
     
         protected function CreateGrid()
         {
-            $result = new Grid($this, $this->dataset, 'countryGrid');
+            $result = new Grid($this, $this->dataset, 'vcountryGrid');
             if ($this->GetSecurityInfo()->HasDeleteGrant())
                $result->SetAllowDeleteSelected(false);
             else
@@ -469,6 +436,7 @@
             
             $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
+            $this->OnGetCustomTemplate->AddListener('vcountryGrid' . '_OnGetCustomTemplate', $this);
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
             $this->AddOperationsColumns($result);
@@ -497,43 +465,7 @@
             //
             // Http Handlers
             //
-            //
-            // View column for wkt field
-            //
-            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline edit column> */
-            //
-            // Edit column for wkt field
-            //
-            $editor = new TextAreaEdit('wkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetEditOperationColumn($editColumn);
-            /* </inline edit column> */
-            
-            /* <inline insert column> */
-            //
-            // Edit column for wkt field
-            //
-            $editor = new TextAreaEdit('wkt_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Wkt', 'wkt', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'wkt_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);//
-            // View column for wkt field
-            //
-            $column = new TextViewColumn('wkt', 'Wkt', $this->dataset);
-            $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'wkt_handler', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
+    
             return $result;
         }
         
@@ -552,12 +484,12 @@
 
     try
     {
-        $Page = new countryPage("country.php", "country", GetCurrentUserGrantForDataSource("country"), 'UTF-8');
-        $Page->SetShortCaption('Country Old');
+        $Page = new vcountryPage("country.php", "vcountry", GetCurrentUserGrantForDataSource("vcountry"), 'UTF-8');
+        $Page->SetShortCaption('Country');
         $Page->SetHeader(GetPagesHeader());
         $Page->SetFooter(GetPagesFooter());
-        $Page->SetCaption('Country Old');
-        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("country"));
+        $Page->SetCaption('Country');
+        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("vcountry"));
         GetApplication()->SetEnableLessRunTimeCompile(GetEnableLessFilesRunTimeCompilation());
         GetApplication()->SetCanUserChangeOwnPassword(
             !function_exists('CanUserChangeOwnPassword') || CanUserChangeOwnPassword());
