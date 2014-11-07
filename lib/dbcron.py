@@ -21,6 +21,9 @@ sql=list()
 sql.append(
   "update queue set dwnstatus='Q' where status='CATALOGUED' and pid is Null and dwnstatus='N';"
 )
+sql.append(
+  "update queue set pid=Null where pid is not null and LAST_UPDATE<(now() - INTERVAL 1 HOUR);"
+)
 
 def main():
     db=dbif.gencur('SELECT * FROM queue')
