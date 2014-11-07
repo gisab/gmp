@@ -135,6 +135,8 @@ class PagePart {
     const PageList = 'page-list';
     const Layout = 'layout';
     const RecordCard = 'record-card';
+    const LoginPage = 'login';
+    const LoginControl = 'login-control';
 }
 
 class PageMode {
@@ -145,6 +147,9 @@ class PageMode {
     const ModalView = 'modal-view';
     const ModalEdit = 'modal-edit';
     const ModalInsert = 'modal-insert';
+    const PrintAll = 'print-all';
+    const PrintOneRecord = 'print-one-record';
+    const PrintDetailPage = 'print-detail-page';
 }
 
 function GetOperation()
@@ -1441,8 +1446,15 @@ abstract class DetailPageEdit extends Page
 
 class CustomLoginPage implements IPage
 {
+
+    #region Events
+    public $OnGetCustomTemplate;
+    #endregion
+
     public function __construct()
-    { }
+    {
+        $this->OnGetCustomTemplate = new Event();
+    }
 
     public function GetValidationScripts()
     {
@@ -1475,4 +1487,18 @@ class CustomLoginPage implements IPage
     }
 
     public function GetContentEncoding() { return 'UTF-8'; }
+
+    public function GetCustomTemplate($part, $defaultValue, &$params = null) {
+        $result = null;
+
+        if (!$params)
+            $params = array();
+
+        $this->OnGetCustomTemplate->Fire(array($part, null, &$result, &$params));
+        if ($result)
+            return Path::Combine('custom_templates', $result);
+        else
+            return $defaultValue;
+    }
+
 }

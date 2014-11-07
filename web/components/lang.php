@@ -70,16 +70,16 @@ $cCloseWindow='Close window';
 $cBack='Back';
 $cError='Error';
 $cShowErrorDetails='Show details';
-$cCriticalErrorSuggestions='An unexpected error has occurred. It could be due to one of several reasons:<ol>
-<li>you try to insert incorrect data or execute illegal operation,</li>
+$cCriticalErrorSuggestions='An unexpected error has occurred. It could be due to one of several reasons:<ul>
+<li>you try to insert incorrect data or execute illegal operation;</li>
 <li>connection to the server has been lost.</li>
-</ol>';
+</ul>';
 $cNot='Not';
 $cShowHideNavbar='Show/hide navbar';
 $cFirst='First';
 $cLast='Last';
 $cequals='equals';
-$cdoesNotEquals='does not equals';
+$cdoesNotEquals='does not equal';
 $cisLessThan='is less than';
 $cisLessThanOrEqualsTo='is less than or equals to';
 $cisGreaterThan='is greater than'; 
@@ -105,7 +105,7 @@ $cErrorsDuringDeleteProcess='An error occurs during delete:';
 $cErrorsDuringDataRetrieving='Data retrieval errors:';
 
 $cFileSizeExceedMaxSizeForField='Maximum file size exceeded for field %s (actual file size: %s, maximum file size: %s) ';
-$cImageSizeExceedMaxSizeForField='Maximum image size exceeded for field %s (actual image size: %dx%d, maximum file size: %dx%d) ';
+$cImageSizeExceedMaxSizeForField='Maximum image size exceeded for field %s (actual image size: %dx%d, maximum image size: %dx%d) ';
 
 $cActions='Actions';
 $cPleaseSelect='Please select...';

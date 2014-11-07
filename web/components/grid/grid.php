@@ -110,6 +110,7 @@ class Grid {
     private $showUpdateLink = true;
     private $useFixedHeader;
     private $showLineNumbers;
+    private $showKeyColumnsImagesInHeader;
     private $useModalInserting;
     private $width;
 
@@ -242,6 +243,7 @@ class Grid {
         $this->enabledInlineEditing = true;
         $this->useFixedHeader = false;
         $this->showLineNumbers = false;
+        $this->showKeyColumnsImagesInHeader = true;
         $this->useModalInserting = false;
         $this->allowOrdering = true;
         $this->filterBuilder = new FilterBuilderControl($this, $this->GetPage()->GetLocalizerCaptions());
@@ -345,6 +347,14 @@ class Grid {
 
     public function SetShowLineNumbers($showLineNumbers) {
         $this->showLineNumbers = $showLineNumbers;
+    }
+
+    public function GetShowKeyColumnsImagesInHeader() {
+        return $this->showKeyColumnsImagesInHeader;
+    }
+
+    public function SetShowKeyColumnsImagesInHeader($showKeyColumnsImagesInHeader) {
+        $this->showKeyColumnsImagesInHeader = $showKeyColumnsImagesInHeader;
     }
 
     public function GetUseFixedHeader() {
@@ -1414,8 +1424,8 @@ class Grid {
                 'Editor' => $renderer->Render($column),
                 'Caption' => $column->GetCaption(),
                 'Required' => $column->DisplayAsRequired(),
-                'UseSetNull' => $column->GetShowSetToNullCheckBox(),
-                'UseSetDefault' => $column->GetAllowSetToDefault(),
+                'DisplaySetToNullCheckBox' => $column->GetDisplaySetToNullCheckBox(),
+                'DisplaySetToDefaultCheckBox' => $column->GetDisplaySetToDefaultCheckBox(),
                 'IsValueNull' => $column->IsValueNull(),
                 'IsValueSetToDefault' => $column->IsValueSetToDefault(),
                 'SetNullCheckBoxName' => $column->GetFieldName() . '_null',
@@ -1433,8 +1443,8 @@ class Grid {
                 'Editor' => $renderer->Render($column),
                 'Caption' => $column->GetCaption(),
                 'Required' => $column->DisplayAsRequired(),
-                'UseSetNull' => $column->GetShowSetToNullCheckBox(),
-                'UseSetDefault' => $column->GetAllowSetToDefault(),
+                'DisplaySetToNullCheckBox' => $column->GetDisplaySetToNullCheckBox(),
+                'DisplaySetToDefaultCheckBox' => $column->GetDisplaySetToDefaultCheckBox(),
                 'IsValueNull' => $column->IsValueNull(),
                 'IsValueSetToDefault' => $column->IsValueSetToDefault(),
                 'SetNullCheckBoxName' => $column->GetFieldName() . '_null',

@@ -20,8 +20,8 @@ function GetGlobalConnectionOptions()
     return array(
   'server' => '127.0.0.1',
   'port' => '3306',
-  'username' => 'admin',
-  'password' => 'admin',
+  'username' => 'gmp',
+  'password' => 'gmp',
   'database' => 'gmp'
 );
 }
@@ -31,20 +31,26 @@ function HasAdminPage()
     return false;
 }
 
+function GetPageGroups()
+{
+    $result = array('Default', 'uno');
+    return $result;
+}
+
 function GetPageInfos()
 {
     $result = array();
-    $result[] = array('caption' => 'Product Catalogue', 'short_caption' => 'Product Catalogue', 'filename' => 'product.php', 'name' => 'qProduct');
-    $result[] = array('caption' => 'Product_old', 'short_caption' => 'Product Catalogue Old', 'filename' => 'productold.php', 'name' => 'test');
-    $result[] = array('caption' => 'Target', 'short_caption' => 'Target', 'filename' => 'target.php', 'name' => 'target');
-    $result[] = array('caption' => 'Country', 'short_caption' => 'Country', 'filename' => 'Country.php', 'name' => 'vcountry');
-    $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue');
-    $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files');
-    $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent');
-    $result[] = array('caption' => 'Statistics', 'short_caption' => 'Statistics', 'filename' => 'vqueue_stats.php', 'name' => 'vqueue_stats');
-    $result[] = array('caption' => 'Errors', 'short_caption' => 'Errors', 'filename' => 'vqueue_nok.php', 'name' => 'vqueue_nok');
-    $result[] = array('caption' => 'Last Hour', 'short_caption' => 'Queue changed in the Last hour', 'filename' => 'vqueue_lasthour.php', 'name' => 'vqueue_lasthour');
-    $result[] = array('caption' => 'Downloading', 'short_caption' => 'Downloading queue', 'filename' => 'vqueue_downloading.php', 'name' => 'vqueue_downloading');
+    $result[] = array('caption' => 'Product Catalogue', 'short_caption' => 'Product Catalogue', 'filename' => 'product.php', 'name' => 'qProduct', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Product_old', 'short_caption' => 'Product Catalogue Old', 'filename' => 'productold.php', 'name' => 'test', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Target', 'short_caption' => 'Target', 'filename' => 'target.php', 'name' => 'target', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Country', 'short_caption' => 'Country', 'filename' => 'country.php', 'name' => 'vcountry', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent', 'group_name' => 'Default', 'add_separator' => true);
+    $result[] = array('caption' => 'Statistics', 'short_caption' => 'Statistics', 'filename' => 'vqueue_stats.php', 'name' => 'vqueue_stats', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Errors', 'short_caption' => 'Errors', 'filename' => 'vqueue_nok.php', 'name' => 'vqueue_nok', 'group_name' => 'uno', 'add_separator' => false);
+    $result[] = array('caption' => 'Last Hour', 'short_caption' => 'Queue changed in the Last hour', 'filename' => 'vqueue_lasthour.php', 'name' => 'vqueue_lasthour', 'group_name' => 'uno', 'add_separator' => false);
+    $result[] = array('caption' => 'Downloading', 'short_caption' => 'Downloading queue', 'filename' => 'vqueue_downloading.php', 'name' => 'vqueue_downloading', 'group_name' => 'Default', 'add_separator' => false);
     return $result;
 }
 
@@ -71,6 +77,8 @@ Developed by gianluca.sabella@gmail.com and distributed under the GPL.
 function ApplyCommonPageSettings(Page $page, Grid $grid)
 {
     $page->SetShowUserAuthBar(false);
+    $page->OnCustomHTMLHeader->AddListener('Global_CustomHTMLHeaderHandler');
+    $page->OnGetCustomTemplate->AddListener('Global_GetCustomTemplateHandler');
     $grid->BeforeUpdateRecord->AddListener('Global_BeforeUpdateHandler');
     $grid->BeforeDeleteRecord->AddListener('Global_BeforeDeleteHandler');
     $grid->BeforeInsertRecord->AddListener('Global_BeforeInsertHandler');
@@ -80,6 +88,16 @@ function ApplyCommonPageSettings(Page $page, Grid $grid)
   Default code page: 1252
 */
 function GetAnsiEncoding() { return 'windows-1252'; }
+
+function Global_CustomHTMLHeaderHandler($page, &$customHtmlHeaderText)
+{
+
+}
+
+function Global_GetCustomTemplateHandler($part, $mode, &$result, &$params)
+{
+
+}
 
 function Global_BeforeUpdateHandler($page, $rowData, &$cancel, &$message, $tableName)
 {

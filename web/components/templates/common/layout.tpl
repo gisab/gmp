@@ -20,6 +20,7 @@
     <script src="components/js/bootstrap/bootstrap.js"></script>
 
     <script type="text/javascript" src="components/js/require-config.js"></script>
+    <script type="text/javascript" src="components/js/user.js"></script>
     {if $JavaScriptMain}
         <script type="text/javascript" data-main="{$JavaScriptMain}" src="components/js/require.js"></script>
     {else}
