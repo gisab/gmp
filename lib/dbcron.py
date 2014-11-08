@@ -19,11 +19,11 @@ import dbif
 
 sql=list()
 sql.append(
-  "update queue set dwnstatus='Q' where status='CATALOGUED' and pid is Null and dwnstatus='N';"
-)
+  "update queue set dwnstatus='Q' where status='CATALOGUED' and pid is Null and dwnstatus='N';")
 sql.append(
-  "update queue set pid=Null where pid is not null and LAST_UPDATE<(now() - INTERVAL 20 MINUTE);"
-)
+  "update queue set pid=Null where pid is not null and LAST_UPDATE<(now() - INTERVAL 20 MINUTE);")
+sql.append(
+  "update queue set status='NEW' where status='NOK' and pid is null and LAST_UPDATE<(now() - interval 1 hour);")
 
 def main():
     db=dbif.gencur('SELECT * FROM queue')
