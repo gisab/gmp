@@ -135,8 +135,12 @@ class queue(object):
         #Download and lock a queued item for triggering the download
         return self.getItem(lockpid=pid,fromStatus=('%'),dwnStatus=cDwnStatusQueued)
 
-    def getItem(self,lockpid='#',fromStatus='#',toStatus='#', dwnStatus='#'):
+    def getItem(self,lockpid='#',fromStatus='#',toStatus='#', dwnStatus='#', olderthan='#'):
         assert fromStatus!='#'
+        if olderthan!='#':
+            oquery=" AND LAST_UPDATE <(now() - INTERVAL %s MINUTE) " % olderthan
+        else:
+            oquery=""
         if dwnStatus!='#':
             dwnquery=" AND dwnstatus='%s'" % dwnStatus
         else:
@@ -147,6 +151,7 @@ class queue(object):
             fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
             qwhere="STATUS in (%s) " % fromStatusCriteria
         qwhere+=dwnquery
+        qwhere+=oquery
         if lockpid=='#':
             #get withoud locking the first avaiable item in the list
             fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
@@ -396,6 +401,12 @@ class queuedItem(object):
         plugin=pluginClass.getPlugin(self.targettype,self.connection)
         self.parseMetadata=plugin.parseMetadata(self)
 
+    ##Touch: set current time in LAST_UPDATE
+    def touch(self):
+        qry="UPDATE queue set LAST_UPDATE=now() where ID='%s' and pid='%s';" % (self.id, self.pid)
+        self.db.exe(qry)
+        pass
+
     ##Set new status for the object
     def setStatus(self,newStatus):
         qry="UPDATE queue set STATUS='%s' where ID='%s' and pid='%s';" % (newStatus, self.id, self.pid)
@@ -625,7 +636,7 @@ def serialWorkflow():
 def parallelWorkflow():
     pid=str(os.getpid())
     import downloader
-    maxParallelItem=50
+    maxParallelItem=20
     sleepTimeForWaitingChilds=1
     childs=list()
     previousMonitor=dict()
@@ -648,11 +659,12 @@ def parallelWorkflow():
             for i in diff:
                 print "MAIN: Completed " + status + " process " +str(i)
         previousMonitor=currMonitor
-        x=q.getItem(lockpid=pid,fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata)
+        x=q.getItem(lockpid='#',fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata,olderthan=1)
         if x=="#":
             break
-        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
+        x.touch()
         del x
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         proc=dict()
