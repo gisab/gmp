@@ -663,8 +663,8 @@ def parallelWorkflow():
         if x=="#":
             break
         x.touch()
-        del x
         cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
+        del x
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         proc=dict()
