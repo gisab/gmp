@@ -75,6 +75,12 @@ class queue(object):
         self.db=dbif.gencur('SELECT * FROM queue')
         self.queue=self.db.cur.fetchall()
     
+    def search(self,condition):
+        qry="SELECT ID FROM queue where %s order by LAST_UPDATE ASC;" % (condition)
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchall()
+        return (item for sublist in rec for item in sublist)
+        
     def addItem(self,newItemObj):
         #check that newItem is instance of newItem
         assert isinstance(newItemObj, newItem)
@@ -154,7 +160,6 @@ class queue(object):
         qwhere+=oquery
         if lockpid=='#':
             #get withoud locking the first avaiable item in the list
-            fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
             qry="SELECT ID, STATUS FROM queue where %s order by LAST_UPDATE ASC limit 1;" % (qwhere)
             self.db.cur.execute(qry)
             rec=self.db.cur.fetchone()
@@ -403,7 +408,7 @@ class queuedItem(object):
 
     ##Touch: set current time in LAST_UPDATE
     def touch(self):
-        qry="UPDATE queue set LAST_UPDATE=now() where ID='%s' and pid='%s';" % (self.id, self.pid)
+        qry="UPDATE queue set LAST_UPDATE=now() where ID='%s';" % (self.id)
         self.db.exe(qry)
         pass
 
@@ -643,7 +648,9 @@ def parallelWorkflow():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     q=libQueue.queue()
-    while True:
+    condition="STATUS !='%s' and PID is null and LAST_UPDATE <(now() - INTERVAL 1 MINUTE)" %(ccatalogued)
+    qItemList=q.search(condition)
+    for qItem in qItemList:
         currMonitor=downloader.monitorChilds(childs)
         #wait for a free resource
         while(currMonitor['nRun']>=maxParallelItem):
@@ -659,12 +666,7 @@ def parallelWorkflow():
             for i in diff:
                 print "MAIN: Completed " + status + " process " +str(i)
         previousMonitor=currMonitor
-        x=q.getItem(lockpid='#',fromStatus=(cnew, chasmetalink, chasmetadata, cmetadataparsed),toStatus=chasmetadata,olderthan=1)
-        if x=="#":
-            break
-        x.touch()
-        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, x.id, prjFolder, x.id, prjFolder, x.id)
-        del x
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, qItem, prjFolder, qItem, prjFolder, qItem)
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         proc=dict()
