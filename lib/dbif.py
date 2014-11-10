@@ -103,6 +103,21 @@ def getTargetList(filter='#'):
     #pprint.pprint(ret)
     return ret
 
+def getRules():
+    qry="SELECT `id`, `condition`, cliaction FROM rule where isactive='Y' order by id ASC;"
+    db=gencur(qry)
+    res=db.cur.fetchall()
+    ret=list()
+    for irec in res:
+        i=dict()
+        i['id']        =irec[0]
+        i['condition'] =irec[1]
+        i['cliaction'] =irec[2]
+        ret.append(i)
+    #import pprint
+    #pprint.pprint(ret)
+    return ret
+
 ## setObject Store an object into MySQL master db
 # @param iobj input object
 # @param tschema target schema
