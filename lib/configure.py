@@ -71,7 +71,7 @@ class configure():
         self.gmap.append({
             'file'    :php_setting,
             'regex'   :php_map,
-            'pattern' :"(' => ')([A-Za-z0-9.]+)(')"
+            'pattern' :"(' => ')([A-Za-z0-9.\-]+)(')"
              })
             
     def ask_user(self):
@@ -107,6 +107,10 @@ class configure():
                 if len(items)>1:
                     print "expression %s found %s times" % (ireg[0],len(items))
                     pprint.pprint(items)
+                    raise
+                if len(items)==0:
+                    print "expression %s not found!" % (ireg[0])
+                    pprint.pprint(ireg)
                     raise
                 #replacing
                 p=re.compile(rsearch)
