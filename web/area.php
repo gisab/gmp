@@ -33,26 +33,29 @@
     
     
     
-    class vqueue_statsPage extends Page
+    class vareaPage extends Page
     {
         protected function DoBeforeCreate()
         {
-            $this->dataset = new TableDataset(
-                new MyConnectionFactory(),
-                GetConnectionOptions(),
-                '`vqueue_stats`');
-            $field = new StringField('targetid');
+            $selectQuery = 'SELECT area.`id`, 
+            area.`name`, 
+            	AsText(area.geom) WKT
+            FROM area';
+            $insertQuery = array();
+            $updateQuery = array();
+            $deleteQuery = array();
+            $this->dataset = new QueryDataset(
+              new MyConnectionFactory(), 
+              GetConnectionOptions(),
+              $selectQuery, $insertQuery, $updateQuery, $deleteQuery, 'varea');
+            $field = new IntegerField('id');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
-            $field = new StringField('status');
+            $field = new StringField('name');
             $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, true);
-            $field = new StringField('dwnstatus');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, true);
-            $field = new IntegerField('nrec');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('WKT');
+            $this->dataset->AddField($field, false);
         }
     
         protected function CreatePageNavigator()
@@ -113,9 +116,9 @@
         protected function CreateGridSearchControl(Grid $grid)
         {
             $grid->UseFilter = true;
-            $grid->SearchControl = new SimpleSearch('vqueue_statsssearch', $this->dataset,
-                array('targetid', 'status', 'dwnstatus', 'nrec'),
-                array($this->RenderText('Targetid'), $this->RenderText('Status'), $this->RenderText('Dwnstatus'), $this->RenderText('Nrec')),
+            $grid->SearchControl = new SimpleSearch('vareassearch', $this->dataset,
+                array('id', 'name', 'WKT'),
+                array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('WKT')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -133,12 +136,11 @@
     
         protected function CreateGridAdvancedSearchControl(Grid $grid)
         {
-            $this->AdvancedSearchControl = new AdvancedSearchControl('vqueue_statsasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
+            $this->AdvancedSearchControl = new AdvancedSearchControl('vareaasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
             $this->AdvancedSearchControl->setTimerInterval(3000);
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('targetid', $this->RenderText('Targetid')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('status', $this->RenderText('Status')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('dwnstatus', $this->RenderText('Dwnstatus')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('nrec', $this->RenderText('Nrec')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('name', $this->RenderText('Name')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('WKT', $this->RenderText('WKT')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -159,36 +161,27 @@
         protected function AddFieldColumns(Grid $grid)
         {
             //
-            // View column for targetid field
+            // View column for id field
             //
-            $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column = new TextViewColumn('id', 'Id', $this->dataset);
             $column->SetOrderable(true);
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
             
             //
-            // View column for status field
+            // View column for name field
             //
-            $column = new TextViewColumn('status', 'Status', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
             
             //
-            // View column for dwnstatus field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for nrec field
-            //
-            $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
@@ -198,30 +191,23 @@
         protected function AddSingleRecordViewColumns(Grid $grid)
         {
             //
-            // View column for targetid field
+            // View column for id field
             //
-            $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column = new TextViewColumn('id', 'Id', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for status field
+            // View column for name field
             //
-            $column = new TextViewColumn('status', 'Status', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for dwnstatus field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for nrec field
-            //
-            $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
         }
@@ -229,47 +215,30 @@
         protected function AddEditColumns(Grid $grid)
         {
             //
-            // Edit column for targetid field
+            // Edit column for id field
             //
-            $editor = new TextEdit('targetid_edit');
-            $editor->SetSize(10);
-            $editor->SetMaxLength(10);
-            $editColumn = new CustomEditColumn('Targetid', 'targetid', $editor, $this->dataset);
+            $editor = new SpinEdit('id_edit');
+            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
             
             //
-            // Edit column for status field
+            // Edit column for name field
             //
-            $editor = new TextEdit('status_edit');
-            $editor->SetSize(16);
-            $editor->SetMaxLength(16);
-            $editColumn = new CustomEditColumn('Status', 'status', $editor, $this->dataset);
+            $editor = new TextEdit('name_edit');
+            $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
             
             //
-            // Edit column for dwnstatus field
+            // Edit column for WKT field
             //
-            $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editor->AddValue('N', $this->RenderText('N'));
-            $editor->AddValue('C', $this->RenderText('C'));
-            $editor->AddValue('Q', $this->RenderText('Q'));
-            $editColumn = new CustomEditColumn('Dwnstatus', 'dwnstatus', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for nrec field
-            //
-            $editor = new TextEdit('nrec_edit');
-            $editColumn = new CustomEditColumn('Nrec', 'nrec', $editor, $this->dataset);
+            $editor = new TextEdit('wkt_edit');
+            $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -279,49 +248,30 @@
         protected function AddInsertColumns(Grid $grid)
         {
             //
-            // Edit column for targetid field
+            // Edit column for id field
             //
-            $editor = new TextEdit('targetid_edit');
-            $editor->SetSize(10);
-            $editor->SetMaxLength(10);
-            $editColumn = new CustomEditColumn('Targetid', 'targetid', $editor, $this->dataset);
+            $editor = new SpinEdit('id_edit');
+            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for status field
+            // Edit column for name field
             //
-            $editor = new TextEdit('status_edit');
-            $editor->SetSize(16);
-            $editor->SetMaxLength(16);
-            $editColumn = new CustomEditColumn('Status', 'status', $editor, $this->dataset);
+            $editor = new TextEdit('name_edit');
+            $editColumn = new CustomEditColumn('Name', 'name', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for dwnstatus field
+            // Edit column for WKT field
             //
-            $editor = new ComboBox('dwnstatus_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editor->AddValue('N', $this->RenderText('N'));
-            $editor->AddValue('C', $this->RenderText('C'));
-            $editor->AddValue('Q', $this->RenderText('Q'));
-            $editColumn = new CustomEditColumn('Dwnstatus', 'dwnstatus', $editor, $this->dataset);
-            $editColumn->SetAllowSetToDefault(true);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddInsertColumn($editColumn);
-            
-            //
-            // Edit column for nrec field
-            //
-            $editor = new TextEdit('nrec_edit');
-            $editColumn = new CustomEditColumn('Nrec', 'nrec', $editor, $this->dataset);
-            $editColumn->SetAllowSetToDefault(true);
+            $editor = new TextEdit('wkt_edit');
+            $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -341,30 +291,23 @@
         protected function AddPrintColumns(Grid $grid)
         {
             //
-            // View column for targetid field
+            // View column for id field
             //
-            $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column = new TextViewColumn('id', 'Id', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for status field
+            // View column for name field
             //
-            $column = new TextViewColumn('status', 'Status', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for dwnstatus field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
-            // View column for nrec field
-            //
-            $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
         }
@@ -372,30 +315,23 @@
         protected function AddExportColumns(Grid $grid)
         {
             //
-            // View column for targetid field
+            // View column for id field
             //
-            $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column = new TextViewColumn('id', 'Id', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for status field
+            // View column for name field
             //
-            $column = new TextViewColumn('status', 'Status', $this->dataset);
+            $column = new TextViewColumn('name', 'Name', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for dwnstatus field
+            // View column for WKT field
             //
-            $column = new TextViewColumn('dwnstatus', 'Dwnstatus', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for nrec field
-            //
-            $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
+            $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
         }
@@ -421,12 +357,19 @@
         {
             return ;
         }
-        public function GetModalGridViewHandler() { return 'vqueue_stats_inline_record_view'; }
+        public function vareaGrid_OnGetCustomTemplate($part, $mode, &$result, &$params)
+        {
+        if ($part == PagePart::Grid && $mode == PageMode::ViewAll)
+         {
+           $result = 'AREA.tpl';
+         }
+        }
+        public function GetModalGridViewHandler() { return 'varea_inline_record_view'; }
         protected function GetEnableModalSingleRecordView() { return true; }
     
         protected function CreateGrid()
         {
-            $result = new Grid($this, $this->dataset, 'vqueue_statsGrid');
+            $result = new Grid($this, $this->dataset, 'vareaGrid');
             if ($this->GetSecurityInfo()->HasDeleteGrant())
                $result->SetAllowDeleteSelected(false);
             else
@@ -441,6 +384,7 @@
             
             $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
+            $this->OnGetCustomTemplate->AddListener('vareaGrid' . '_OnGetCustomTemplate', $this);
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
             $this->AddOperationsColumns($result);
@@ -488,12 +432,12 @@
 
     try
     {
-        $Page = new vqueue_statsPage("vqueue_stats.php", "vqueue_stats", GetCurrentUserGrantForDataSource("vqueue_stats"), 'UTF-8');
-        $Page->SetShortCaption('Statistics');
+        $Page = new vareaPage("area.php", "varea", GetCurrentUserGrantForDataSource("vcountry"), 'UTF-8');
+        $Page->SetShortCaption('Area');
         $Page->SetHeader(GetPagesHeader());
         $Page->SetFooter(GetPagesFooter());
-        $Page->SetCaption('Statistics');
-        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("vqueue_stats"));
+        $Page->SetCaption('Area');
+        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("vcountry"));
         GetApplication()->SetEnableLessRunTimeCompile(GetEnableLessFilesRunTimeCompilation());
         GetApplication()->SetCanUserChangeOwnPassword(
             !function_exists('CanUserChangeOwnPassword') || CanUserChangeOwnPassword());

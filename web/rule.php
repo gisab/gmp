@@ -33,36 +33,30 @@
     
     
     
-    class targetPage extends Page
+    class rulePage extends Page
     {
         protected function DoBeforeCreate()
         {
             $this->dataset = new TableDataset(
                 new MyConnectionFactory(),
                 GetConnectionOptions(),
-                '`target`');
-            $field = new StringField('id');
+                '`rule`');
+            $field = new IntegerField('id', null, null, true);
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
-            $field = new StringField('type');
+            $field = new StringField('isactive');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('hostname');
+            $field = new StringField('condition');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('username');
+            $field = new StringField('cliaction');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('password');
+            $field = new StringField('description');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
-            $field = new StringField('protocol');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
-            $field = new IntegerField('port');
-            $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, false);
-            $field = new StringField('rep');
+            $field = new DateTimeField('LAST_UPDATE');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
         }
@@ -125,9 +119,9 @@
         protected function CreateGridSearchControl(Grid $grid)
         {
             $grid->UseFilter = true;
-            $grid->SearchControl = new SimpleSearch('targetssearch', $this->dataset,
-                array('id', 'type', 'hostname', 'username', 'password', 'protocol', 'port', 'rep'),
-                array($this->RenderText('Id'), $this->RenderText('Type'), $this->RenderText('Hostname'), $this->RenderText('Username'), $this->RenderText('Password'), $this->RenderText('Protocol'), $this->RenderText('Port'), $this->RenderText('Rep')),
+            $grid->SearchControl = new SimpleSearch('rulessearch', $this->dataset,
+                array('id', 'isactive', 'condition', 'cliaction', 'description', 'LAST_UPDATE'),
+                array($this->RenderText('Id'), $this->RenderText('Isactive'), $this->RenderText('Condition'), $this->RenderText('Cliaction'), $this->RenderText('Description'), $this->RenderText('LAST UPDATE')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -145,16 +139,14 @@
     
         protected function CreateGridAdvancedSearchControl(Grid $grid)
         {
-            $this->AdvancedSearchControl = new AdvancedSearchControl('targetasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
+            $this->AdvancedSearchControl = new AdvancedSearchControl('ruleasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
             $this->AdvancedSearchControl->setTimerInterval(1000);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('type', $this->RenderText('Type')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('hostname', $this->RenderText('Hostname')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('username', $this->RenderText('Username')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('password', $this->RenderText('Password')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('protocol', $this->RenderText('Protocol')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('port', $this->RenderText('Port')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('rep', $this->RenderText('Rep')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('isactive', $this->RenderText('Isactive')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('condition', $this->RenderText('Condition')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('cliaction', $this->RenderText('Cliaction')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('description', $this->RenderText('Description')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateDateTimeSearchInput('LAST_UPDATE', $this->RenderText('LAST UPDATE')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -172,13 +164,13 @@
             }
             if ($this->GetSecurityInfo()->HasEditGrant())
             {
-                $column = new ModalDialogEditRowColumn(
-                    $this->GetLocalizerCaptions()->GetMessageString('Edit'), $this->dataset,
+                $column = new InlineEditRowColumn('Edit', $this->dataset,
                     $this->GetLocalizerCaptions()->GetMessageString('Edit'),
-                    $this->GetModalGridEditingHandler());
+                    $this->GetLocalizerCaptions()->GetMessageString('Cancel'),
+                    $this->GetLocalizerCaptions()->GetMessageString('Commit'),
+                    true);
                 $grid->AddViewColumn($column, $actionsBandName);
-                $column->SetImagePath('images/edit_action.png');
-                $column->OnShow->AddListener('ShowEditButtonHandler', $this);
+                $column->OnShow->AddListener('ShowInlineEditButtonHandler', $this);
             }
             if ($this->GetSecurityInfo()->HasDeleteGrant())
             {
@@ -189,6 +181,15 @@
             $column->SetAdditionalAttribute("data-modal-delete", "true");
             $column->SetAdditionalAttribute("data-delete-handler-name", $this->GetModalGridDeleteHandler());
             }
+            if ($this->GetSecurityInfo()->HasAddGrant())
+            {
+                $column = new ModalDialogCopyRowColumn(
+                    $this->GetLocalizerCaptions()->GetMessageString('Copy'), $this->dataset,
+                    $this->GetLocalizerCaptions()->GetMessageString('Copy'),
+                    $this->GetModalGridCopyHandler());
+                $grid->AddViewColumn($column, $actionsBandName);
+                $column->SetImagePath('images/copy_action.png');
+            }
         }
     
         protected function AddFieldColumns(Grid $grid)
@@ -198,131 +199,38 @@
             //
             $column = new TextViewColumn('id', 'Id', $this->dataset);
             $column->SetOrderable(true);
-            
-            /* <inline insert column> */
-            //
-            // Edit column for id field
-            //
-            $editor = new TextEdit('id_edit');
-            $editor->SetSize(10);
-            $editor->SetMaxLength(10);
-            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
             
             //
-            // View column for type field
+            // View column for isactive field
             //
-            $column = new TextViewColumn('type', 'Type', $this->dataset);
+            $column = new TextViewColumn('isactive', 'Isactive', $this->dataset);
             $column->SetOrderable(true);
             
-            /* <inline insert column> */
+            /* <inline edit column> */
             //
-            // Edit column for type field
+            // Edit column for isactive field
             //
-            $editor = new ComboBox('type_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editor->AddValue('oda', $this->RenderText('oda'));
-            $editor->AddValue('dhus', $this->RenderText('dhus'));
-            $editor->AddValue('lfs', $this->RenderText('lfs'));
-            $editColumn = new CustomEditColumn('Type', 'type', $editor, $this->dataset);
+            $editor = new ComboBox('isactive_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('Y', $this->RenderText('Y'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editColumn = new CustomEditColumn('Isactive', 'isactive', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for hostname field
-            //
-            $column = new TextViewColumn('hostname', 'Hostname', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('targetGrid_hostname_handler_list');
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
             
             /* <inline insert column> */
             //
-            // Edit column for hostname field
+            // Edit column for isactive field
             //
-            $editor = new TextAreaEdit('hostname_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Hostname', 'hostname', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for username field
-            //
-            $column = new TextViewColumn('username', 'Username', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline insert column> */
-            //
-            // Edit column for username field
-            //
-            $editor = new TextEdit('username_edit');
-            $editor->SetSize(64);
-            $editor->SetMaxLength(64);
-            $editColumn = new CustomEditColumn('Username', 'username', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for password field
-            //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline insert column> */
-            //
-            // Edit column for password field
-            //
-            $editor = new TextEdit('password_edit');
-            $editor->SetSize(64);
-            $editor->SetMaxLength(64);
-            $editColumn = new CustomEditColumn('Password', 'password', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
-            // View column for protocol field
-            //
-            $column = new TextViewColumn('protocol', 'Protocol', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline insert column> */
-            //
-            // Edit column for protocol field
-            //
-            $editor = new TextEdit('protocol_edit');
-            $editor->SetSize(10);
-            $editor->SetMaxLength(10);
-            $editColumn = new CustomEditColumn('Protocol', 'protocol', $editor, $this->dataset);
+            $editor = new ComboBox('isactive_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('Y', $this->RenderText('Y'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editColumn = new CustomEditColumn('Isactive', 'isactive', $editor, $this->dataset);
             $editColumn->SetAllowSetToDefault(true);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
@@ -334,17 +242,103 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for port field
+            // View column for condition field
             //
-            $column = new TextViewColumn('port', 'Port', $this->dataset);
+            $column = new TextViewColumn('condition', 'Condition', $this->dataset);
             $column->SetOrderable(true);
+            $column->SetMaxLength(75);
+            $column->SetFullTextWindowHandlerName('ruleGrid_condition_handler_list');
+            
+            /* <inline edit column> */
+            //
+            // Edit column for condition field
+            //
+            $editor = new TextAreaEdit('condition_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Condition', 'condition', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
             
             /* <inline insert column> */
             //
-            // Edit column for port field
+            // Edit column for condition field
             //
-            $editor = new TextEdit('port_edit');
-            $editColumn = new CustomEditColumn('Port', 'port', $editor, $this->dataset);
+            $editor = new TextAreaEdit('condition_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Condition', 'condition', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetInsertOperationColumn($editColumn);
+            /* </inline insert column> */
+            $column->SetDescription($this->RenderText('The condition is expressed as a where criteria applied to (queue join product) table'));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
+            
+            //
+            // View column for cliaction field
+            //
+            $column = new TextViewColumn('cliaction', 'Cliaction', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetMaxLength(75);
+            $column->SetFullTextWindowHandlerName('ruleGrid_cliaction_handler_list');
+            
+            /* <inline edit column> */
+            //
+            // Edit column for cliaction field
+            //
+            $editor = new TextAreaEdit('cliaction_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Cliaction', 'cliaction', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
+            
+            /* <inline insert column> */
+            //
+            // Edit column for cliaction field
+            //
+            $editor = new TextAreaEdit('cliaction_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Cliaction', 'cliaction', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetInsertOperationColumn($editColumn);
+            /* </inline insert column> */
+            $column->SetDescription($this->RenderText('A linux command line on which item is passed as argument'));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
+            
+            //
+            // View column for description field
+            //
+            $column = new TextViewColumn('description', 'Description', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetMaxLength(75);
+            $column->SetFullTextWindowHandlerName('ruleGrid_description_handler_list');
+            
+            /* <inline edit column> */
+            //
+            // Edit column for description field
+            //
+            $editor = new TextAreaEdit('description_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Description', 'description', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
+            
+            /* <inline insert column> */
+            //
+            // Edit column for description field
+            //
+            $editor = new TextAreaEdit('description_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Description', 'description', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -355,19 +349,30 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for rep field
+            // View column for LAST_UPDATE field
             //
-            $column = new TextViewColumn('rep', 'Rep', $this->dataset);
+            $column = new DateTimeViewColumn('LAST_UPDATE', 'LAST UPDATE', $this->dataset);
+            $column->SetDateTimeFormat('Y-m-d H:i:s');
             $column->SetOrderable(true);
-            $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('targetGrid_rep_handler_list');
+            
+            /* <inline edit column> */
+            //
+            // Edit column for LAST_UPDATE field
+            //
+            $editor = new DateTimeEdit('last_update_edit', true, 'Y-m-d H:i:s', GetFirstDayOfWeek());
+            $editColumn = new CustomEditColumn('LAST UPDATE', 'LAST_UPDATE', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
             
             /* <inline insert column> */
             //
-            // Edit column for rep field
+            // Edit column for LAST_UPDATE field
             //
-            $editor = new TextAreaEdit('rep_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Rep', 'rep', $editor, $this->dataset);
+            $editor = new DateTimeEdit('last_update_edit', true, 'Y-m-d H:i:s', GetFirstDayOfWeek());
+            $editColumn = new CustomEditColumn('LAST UPDATE', 'LAST_UPDATE', $editor, $this->dataset);
             $editColumn->SetAllowSetToDefault(true);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
@@ -389,156 +394,110 @@
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for type field
+            // View column for isactive field
             //
-            $column = new TextViewColumn('type', 'Type', $this->dataset);
+            $column = new TextViewColumn('isactive', 'Isactive', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for hostname field
+            // View column for condition field
             //
-            $column = new TextViewColumn('hostname', 'Hostname', $this->dataset);
+            $column = new TextViewColumn('condition', 'Condition', $this->dataset);
             $column->SetOrderable(true);
             $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('targetGrid_hostname_handler_view');
+            $column->SetFullTextWindowHandlerName('ruleGrid_condition_handler_view');
             $grid->AddSingleRecordViewColumn($column);
             
             //
-            // View column for username field
+            // View column for cliaction field
             //
-            $column = new TextViewColumn('username', 'Username', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for password field
-            //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for protocol field
-            //
-            $column = new TextViewColumn('protocol', 'Protocol', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for port field
-            //
-            $column = new TextViewColumn('port', 'Port', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for rep field
-            //
-            $column = new TextViewColumn('rep', 'Rep', $this->dataset);
+            $column = new TextViewColumn('cliaction', 'Cliaction', $this->dataset);
             $column->SetOrderable(true);
             $column->SetMaxLength(75);
-            $column->SetFullTextWindowHandlerName('targetGrid_rep_handler_view');
+            $column->SetFullTextWindowHandlerName('ruleGrid_cliaction_handler_view');
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for description field
+            //
+            $column = new TextViewColumn('description', 'Description', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetMaxLength(75);
+            $column->SetFullTextWindowHandlerName('ruleGrid_description_handler_view');
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for LAST_UPDATE field
+            //
+            $column = new DateTimeViewColumn('LAST_UPDATE', 'LAST UPDATE', $this->dataset);
+            $column->SetDateTimeFormat('Y-m-d H:i:s');
+            $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
         }
     
         protected function AddEditColumns(Grid $grid)
         {
-            //
-            // Edit column for id field
-            //
-            $editor = new TextEdit('id_edit');
-            $editor->SetSize(10);
-            $editor->SetMaxLength(10);
-            $editColumn = new CustomEditColumn('Id', 'id', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for type field
-            //
-            $editor = new ComboBox('type_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
-            $editor->AddValue('oda', $this->RenderText('oda'));
-            $editor->AddValue('dhus', $this->RenderText('dhus'));
-            $editor->AddValue('lfs', $this->RenderText('lfs'));
-            $editColumn = new CustomEditColumn('Type', 'type', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for hostname field
-            //
-            $editor = new TextAreaEdit('hostname_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Hostname', 'hostname', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for username field
-            //
-            $editor = new TextEdit('username_edit');
-            $editor->SetSize(64);
-            $editor->SetMaxLength(64);
-            $editColumn = new CustomEditColumn('Username', 'username', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for password field
-            //
-            $editor = new TextEdit('password_edit');
-            $editor->SetSize(64);
-            $editor->SetMaxLength(64);
-            $editColumn = new CustomEditColumn('Password', 'password', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for protocol field
-            //
-            $editor = new TextEdit('protocol_edit');
-            $editor->SetSize(10);
-            $editor->SetMaxLength(10);
-            $editColumn = new CustomEditColumn('Protocol', 'protocol', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for port field
-            //
-            $editor = new TextEdit('port_edit');
-            $editColumn = new CustomEditColumn('Port', 'port', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for rep field
-            //
-            $editor = new TextAreaEdit('rep_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Rep', 'rep', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
+    
         }
     
         protected function AddInsertColumns(Grid $grid)
         {
-    
+            //
+            // Edit column for isactive field
+            //
+            $editor = new ComboBox('isactive_edit', $this->GetLocalizerCaptions()->GetMessageString('PleaseSelect'));
+            $editor->AddValue('Y', $this->RenderText('Y'));
+            $editor->AddValue('N', $this->RenderText('N'));
+            $editColumn = new CustomEditColumn('Isactive', 'isactive', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for condition field
+            //
+            $editor = new TextAreaEdit('condition_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Condition', 'condition', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for cliaction field
+            //
+            $editor = new TextAreaEdit('cliaction_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Cliaction', 'cliaction', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for description field
+            //
+            $editor = new TextAreaEdit('description_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Description', 'description', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for LAST_UPDATE field
+            //
+            $editor = new DateTimeEdit('last_update_edit', true, 'Y-m-d H:i:s', GetFirstDayOfWeek());
+            $editColumn = new CustomEditColumn('LAST UPDATE', 'LAST_UPDATE', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
             if ($this->GetSecurityInfo()->HasAddGrant())
             {
                 $grid->SetShowAddButton(false);
@@ -561,51 +520,38 @@
             $grid->AddPrintColumn($column);
             
             //
-            // View column for type field
+            // View column for isactive field
             //
-            $column = new TextViewColumn('type', 'Type', $this->dataset);
+            $column = new TextViewColumn('isactive', 'Isactive', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for hostname field
+            // View column for condition field
             //
-            $column = new TextViewColumn('hostname', 'Hostname', $this->dataset);
+            $column = new TextViewColumn('condition', 'Condition', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for username field
+            // View column for cliaction field
             //
-            $column = new TextViewColumn('username', 'Username', $this->dataset);
+            $column = new TextViewColumn('cliaction', 'Cliaction', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for password field
+            // View column for description field
             //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
+            $column = new TextViewColumn('description', 'Description', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
             
             //
-            // View column for protocol field
+            // View column for LAST_UPDATE field
             //
-            $column = new TextViewColumn('protocol', 'Protocol', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
-            // View column for port field
-            //
-            $column = new TextViewColumn('port', 'Port', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
-            // View column for rep field
-            //
-            $column = new TextViewColumn('rep', 'Rep', $this->dataset);
+            $column = new DateTimeViewColumn('LAST_UPDATE', 'LAST UPDATE', $this->dataset);
+            $column->SetDateTimeFormat('Y-m-d H:i:s');
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
         }
@@ -620,51 +566,38 @@
             $grid->AddExportColumn($column);
             
             //
-            // View column for type field
+            // View column for isactive field
             //
-            $column = new TextViewColumn('type', 'Type', $this->dataset);
+            $column = new TextViewColumn('isactive', 'Isactive', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for hostname field
+            // View column for condition field
             //
-            $column = new TextViewColumn('hostname', 'Hostname', $this->dataset);
+            $column = new TextViewColumn('condition', 'Condition', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for username field
+            // View column for cliaction field
             //
-            $column = new TextViewColumn('username', 'Username', $this->dataset);
+            $column = new TextViewColumn('cliaction', 'Cliaction', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for password field
+            // View column for description field
             //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
+            $column = new TextViewColumn('description', 'Description', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
             //
-            // View column for protocol field
+            // View column for LAST_UPDATE field
             //
-            $column = new TextViewColumn('protocol', 'Protocol', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for port field
-            //
-            $column = new TextViewColumn('port', 'Port', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for rep field
-            //
-            $column = new TextViewColumn('rep', 'Rep', $this->dataset);
+            $column = new DateTimeViewColumn('LAST_UPDATE', 'LAST UPDATE', $this->dataset);
+            $column->SetDateTimeFormat('Y-m-d H:i:s');
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
         }
@@ -690,12 +623,9 @@
         {
             return ;
         }
-        public function GetModalGridViewHandler() { return 'target_inline_record_view'; }
+        public function GetModalGridViewHandler() { return 'rule_inline_record_view'; }
         protected function GetEnableModalSingleRecordView() { return true; }
-        
-        public function GetModalGridEditingHandler() { return 'target_inline_edit'; }
-        protected function GetEnableModalGridEditing() { return true; }
-        public function ShowEditButtonHandler(&$show)
+        public function ShowInlineEditButtonHandler(&$show)
         {
             if ($this->GetRecordPermission() != null)
                 $show = $this->GetRecordPermission()->HasEditGrant($this->GetDataset());
@@ -706,14 +636,17 @@
                 $show = $this->GetRecordPermission()->HasDeleteGrant($this->GetDataset());
         }
         
-        public function GetModalGridDeleteHandler() { return 'target_modal_delete'; }
+        public function GetModalGridDeleteHandler() { return 'rule_modal_delete'; }
         protected function GetEnableModalGridDelete() { return true; }
+        
+        public function GetModalGridCopyHandler() { return 'rule_inline_edit'; }
+        protected function GetEnableModalGridCopy() { return true; }
     
         protected function CreateGrid()
         {
-            $result = new Grid($this, $this->dataset, 'targetGrid');
+            $result = new Grid($this, $this->dataset, 'ruleGrid');
             if ($this->GetSecurityInfo()->HasDeleteGrant())
-               $result->SetAllowDeleteSelected(false);
+               $result->SetAllowDeleteSelected(true);
             else
                $result->SetAllowDeleteSelected(false);   
             
@@ -723,7 +656,6 @@
             $result->SetDefaultOrdering('id', otAscending);
             $result->SetUseFixedHeader(true);
             $result->SetShowLineNumbers(true);
-            $result->SetShowKeyColumnsImagesInHeader(false);
             
             $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
@@ -748,7 +680,7 @@
             $this->SetSimpleSearchAvailable(true);
             $this->SetAdvancedSearchAvailable(true);
             $this->SetFilterRowAvailable(true);
-            $this->SetVisualEffectsEnabled(true);
+            $this->SetVisualEffectsEnabled(false);
             $this->SetShowTopPageNavigator(true);
             $this->SetShowBottomPageNavigator(true);
     
@@ -756,56 +688,119 @@
             // Http Handlers
             //
             //
-            // View column for hostname field
+            // View column for condition field
             //
-            $column = new TextViewColumn('hostname', 'Hostname', $this->dataset);
+            $column = new TextViewColumn('condition', 'Condition', $this->dataset);
             $column->SetOrderable(true);
             
-            /* <inline insert column> */
+            /* <inline edit column> */
             //
-            // Edit column for hostname field
+            // Edit column for condition field
             //
-            $editor = new TextAreaEdit('hostname_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Hostname', 'hostname', $editor, $this->dataset);
+            $editor = new TextAreaEdit('condition_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Condition', 'condition', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'targetGrid_hostname_handler_list', $column);
-            GetApplication()->RegisterHTTPHandler($handler);
-            //
-            // View column for rep field
-            //
-            $column = new TextViewColumn('rep', 'Rep', $this->dataset);
-            $column->SetOrderable(true);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
             
             /* <inline insert column> */
             //
-            // Edit column for rep field
+            // Edit column for condition field
             //
-            $editor = new TextAreaEdit('rep_edit', 50, 8);
-            $editColumn = new CustomEditColumn('Rep', 'rep', $editor, $this->dataset);
+            $editor = new TextAreaEdit('condition_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Condition', 'condition', $editor, $this->dataset);
             $editColumn->SetAllowSetToDefault(true);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $column->SetInsertOperationColumn($editColumn);
             /* </inline insert column> */
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'targetGrid_rep_handler_list', $column);
-            GetApplication()->RegisterHTTPHandler($handler);//
-            // View column for hostname field
-            //
-            $column = new TextViewColumn('hostname', 'Hostname', $this->dataset);
-            $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'targetGrid_hostname_handler_view', $column);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'ruleGrid_condition_handler_list', $column);
             GetApplication()->RegisterHTTPHandler($handler);
             //
-            // View column for rep field
+            // View column for cliaction field
             //
-            $column = new TextViewColumn('rep', 'Rep', $this->dataset);
+            $column = new TextViewColumn('cliaction', 'Cliaction', $this->dataset);
             $column->SetOrderable(true);
-            $handler = new ShowTextBlobHandler($this->dataset, $this, 'targetGrid_rep_handler_view', $column);
+            
+            /* <inline edit column> */
+            //
+            // Edit column for cliaction field
+            //
+            $editor = new TextAreaEdit('cliaction_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Cliaction', 'cliaction', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
+            
+            /* <inline insert column> */
+            //
+            // Edit column for cliaction field
+            //
+            $editor = new TextAreaEdit('cliaction_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Cliaction', 'cliaction', $editor, $this->dataset);
+            $editColumn->SetAllowSetToDefault(true);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetInsertOperationColumn($editColumn);
+            /* </inline insert column> */
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'ruleGrid_cliaction_handler_list', $column);
+            GetApplication()->RegisterHTTPHandler($handler);
+            //
+            // View column for description field
+            //
+            $column = new TextViewColumn('description', 'Description', $this->dataset);
+            $column->SetOrderable(true);
+            
+            /* <inline edit column> */
+            //
+            // Edit column for description field
+            //
+            $editor = new TextAreaEdit('description_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Description', 'description', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetEditOperationColumn($editColumn);
+            /* </inline edit column> */
+            
+            /* <inline insert column> */
+            //
+            // Edit column for description field
+            //
+            $editor = new TextAreaEdit('description_edit', 50, 8);
+            $editColumn = new CustomEditColumn('Description', 'description', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $column->SetInsertOperationColumn($editColumn);
+            /* </inline insert column> */
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'ruleGrid_description_handler_list', $column);
+            GetApplication()->RegisterHTTPHandler($handler);//
+            // View column for condition field
+            //
+            $column = new TextViewColumn('condition', 'Condition', $this->dataset);
+            $column->SetOrderable(true);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'ruleGrid_condition_handler_view', $column);
+            GetApplication()->RegisterHTTPHandler($handler);
+            //
+            // View column for cliaction field
+            //
+            $column = new TextViewColumn('cliaction', 'Cliaction', $this->dataset);
+            $column->SetOrderable(true);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'ruleGrid_cliaction_handler_view', $column);
+            GetApplication()->RegisterHTTPHandler($handler);
+            //
+            // View column for description field
+            //
+            $column = new TextViewColumn('description', 'Description', $this->dataset);
+            $column->SetOrderable(true);
+            $handler = new ShowTextBlobHandler($this->dataset, $this, 'ruleGrid_description_handler_view', $column);
             GetApplication()->RegisterHTTPHandler($handler);
             return $result;
         }
@@ -825,12 +820,12 @@
 
     try
     {
-        $Page = new targetPage("target.php", "target", GetCurrentUserGrantForDataSource("target"), 'UTF-8');
-        $Page->SetShortCaption('Target');
+        $Page = new rulePage("rule.php", "rule", GetCurrentUserGrantForDataSource("rule"), 'UTF-8');
+        $Page->SetShortCaption('Rule');
         $Page->SetHeader(GetPagesHeader());
         $Page->SetFooter(GetPagesFooter());
-        $Page->SetCaption('Target');
-        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("target"));
+        $Page->SetCaption('Rule');
+        $Page->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource("rule"));
         GetApplication()->SetEnableLessRunTimeCompile(GetEnableLessFilesRunTimeCompilation());
         GetApplication()->SetCanUserChangeOwnPassword(
             !function_exists('CanUserChangeOwnPassword') || CanUserChangeOwnPassword());

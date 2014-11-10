@@ -33,21 +33,21 @@
     
     
     
-    class vcountryPage extends Page
+    class vareaPage extends Page
     {
         protected function DoBeforeCreate()
         {
-            $selectQuery = 'SELECT country.`id`, 
-            country.`name`, 
-            	AsText(country.geom) WKT
-            FROM country';
+            $selectQuery = 'SELECT area.`id`, 
+            area.`name`, 
+            	AsText(area.geom) WKT
+            FROM area';
             $insertQuery = array();
             $updateQuery = array();
             $deleteQuery = array();
             $this->dataset = new QueryDataset(
               new MyConnectionFactory(), 
               GetConnectionOptions(),
-              $selectQuery, $insertQuery, $updateQuery, $deleteQuery, 'vcountry');
+              $selectQuery, $insertQuery, $updateQuery, $deleteQuery, 'varea');
             $field = new IntegerField('id');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
@@ -74,7 +74,6 @@
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
             $result->AddGroup('Default');
-            $result->AddGroup('uno');
             if (GetCurrentUserGrantForDataSource('qProduct')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('test')->HasViewGrant())
@@ -88,13 +87,13 @@
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent'), true, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('vqueue_stats')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'uno'));
+                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('vqueue_lasthour')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour'), false, 'uno'));
+                $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('vqueue_downloading')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading'), false, 'Default'));
             
@@ -113,7 +112,7 @@
         protected function CreateGridSearchControl(Grid $grid)
         {
             $grid->UseFilter = true;
-            $grid->SearchControl = new SimpleSearch('vcountryssearch', $this->dataset,
+            $grid->SearchControl = new SimpleSearch('vareassearch', $this->dataset,
                 array('id', 'name', 'WKT'),
                 array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('WKT')),
                 array(
@@ -133,7 +132,7 @@
     
         protected function CreateGridAdvancedSearchControl(Grid $grid)
         {
-            $this->AdvancedSearchControl = new AdvancedSearchControl('vcountryasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
+            $this->AdvancedSearchControl = new AdvancedSearchControl('vareaasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
             $this->AdvancedSearchControl->setTimerInterval(1000);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('name', $this->RenderText('Name')));
@@ -344,7 +343,7 @@
         {
             return ;
         }
-        public function vcountryGrid_OnGetCustomTemplate($part, $mode, &$result, &$params)
+        public function vareaGrid_OnGetCustomTemplate($part, $mode, &$result, &$params)
         {
         if ($part == PagePart::Grid && $mode == PageMode::ViewAll)
          {
@@ -354,7 +353,7 @@
     
         protected function CreateGrid()
         {
-            $result = new Grid($this, $this->dataset, 'vcountryGrid');
+            $result = new Grid($this, $this->dataset, 'vareaGrid');
             if ($this->GetSecurityInfo()->HasDeleteGrant())
                $result->SetAllowDeleteSelected(false);
             else
@@ -368,7 +367,7 @@
             
             $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
-            $this->OnGetCustomTemplate->AddListener('vcountryGrid' . '_OnGetCustomTemplate', $this);
+            $this->OnGetCustomTemplate->AddListener('vareaGrid' . '_OnGetCustomTemplate', $this);
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
             $this->AddOperationsColumns($result);
@@ -416,7 +415,7 @@
 
     try
     {
-        $Page = new vcountryPage("country.php", "vcountry", GetCurrentUserGrantForDataSource("vcountry"), 'UTF-8');
+        $Page = new vareaPage("country.php", "varea", GetCurrentUserGrantForDataSource("vcountry"), 'UTF-8');
         $Page->SetShortCaption('Country');
         $Page->SetHeader(GetPagesHeader());
         $Page->SetFooter(GetPagesFooter());

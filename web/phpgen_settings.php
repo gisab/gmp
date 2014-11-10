@@ -33,7 +33,7 @@ function HasAdminPage()
 
 function GetPageGroups()
 {
-    $result = array('Default', 'uno');
+    $result = array('Default', 'Queue', 'Statistics');
     return $result;
 }
 
@@ -41,16 +41,17 @@ function GetPageInfos()
 {
     $result = array();
     $result[] = array('caption' => 'Product Catalogue', 'short_caption' => 'Product Catalogue', 'filename' => 'product.php', 'name' => 'qProduct', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Product_old', 'short_caption' => 'Product Catalogue Old', 'filename' => 'productold.php', 'name' => 'test', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Target', 'short_caption' => 'Target', 'filename' => 'target.php', 'name' => 'target', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Country', 'short_caption' => 'Country', 'filename' => 'country.php', 'name' => 'vcountry', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent', 'group_name' => 'Default', 'add_separator' => true);
-    $result[] = array('caption' => 'Statistics', 'short_caption' => 'Statistics', 'filename' => 'vqueue_stats.php', 'name' => 'vqueue_stats', 'group_name' => 'Default', 'add_separator' => false);
-    $result[] = array('caption' => 'Errors', 'short_caption' => 'Errors', 'filename' => 'vqueue_nok.php', 'name' => 'vqueue_nok', 'group_name' => 'uno', 'add_separator' => false);
-    $result[] = array('caption' => 'Last Hour', 'short_caption' => 'Queue changed in the Last hour', 'filename' => 'vqueue_lasthour.php', 'name' => 'vqueue_lasthour', 'group_name' => 'uno', 'add_separator' => false);
-    $result[] = array('caption' => 'Downloading', 'short_caption' => 'Downloading queue', 'filename' => 'vqueue_downloading.php', 'name' => 'vqueue_downloading', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'SLC', 'short_caption' => 'SLC Groups', 'filename' => 'vslc.php', 'name' => 'vslc', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Area', 'short_caption' => 'Area', 'filename' => 'area.php', 'name' => 'vcountry', 'group_name' => 'Default', 'add_separator' => false);
+    $result[] = array('caption' => 'Queue', 'short_caption' => 'Queue', 'filename' => 'queue.php', 'name' => 'queue', 'group_name' => 'Queue', 'add_separator' => true);
+    $result[] = array('caption' => 'Files', 'short_caption' => 'Files', 'filename' => 'files.php', 'name' => 'files', 'group_name' => 'Queue', 'add_separator' => false);
+    $result[] = array('caption' => 'Target', 'short_caption' => 'Target', 'filename' => 'target.php', 'name' => 'target', 'group_name' => 'Queue', 'add_separator' => false);
+    $result[] = array('caption' => 'Agent', 'short_caption' => 'Agent', 'filename' => 'agent.php', 'name' => 'agent', 'group_name' => 'Queue', 'add_separator' => false);
+    $result[] = array('caption' => 'Rule', 'short_caption' => 'Rule', 'filename' => 'rule.php', 'name' => 'rule', 'group_name' => 'Queue', 'add_separator' => false);
+    $result[] = array('caption' => 'Statistics', 'short_caption' => 'Statistics', 'filename' => 'vqueue_stats.php', 'name' => 'vqueue_stats', 'group_name' => 'Statistics', 'add_separator' => true);
+    $result[] = array('caption' => 'Errors', 'short_caption' => 'Errors', 'filename' => 'vqueue_nok.php', 'name' => 'vqueue_nok', 'group_name' => 'Statistics', 'add_separator' => false);
+    $result[] = array('caption' => 'Last Hour', 'short_caption' => 'Queue changed in the Last hour', 'filename' => 'vqueue_lasthour.php', 'name' => 'vqueue_lasthour', 'group_name' => 'Statistics', 'add_separator' => false);
+    $result[] = array('caption' => 'Downloading', 'short_caption' => 'Downloading queue', 'filename' => 'vqueue_downloading.php', 'name' => 'vqueue_downloading', 'group_name' => 'Statistics', 'add_separator' => false);
     return $result;
 }
 

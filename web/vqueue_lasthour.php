@@ -70,7 +70,7 @@
             $result = new CompositePageNavigator($this);
             
             $partitionNavigator = new PageNavigator('pnav', $this, $this->dataset);
-            $partitionNavigator->SetRowsPerPage(50);
+            $partitionNavigator->SetRowsPerPage(100);
             $result->AddPageNavigator($partitionNavigator);
             
             return $result;
@@ -81,29 +81,32 @@
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
             $result->AddGroup('Default');
-            $result->AddGroup('uno');
+            $result->AddGroup('Queue');
+            $result->AddGroup('Statistics');
             if (GetCurrentUserGrantForDataSource('qProduct')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Default'));
-            if (GetCurrentUserGrantForDataSource('test')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Product_old'), 'productold.php', $this->RenderText('Product Catalogue Old'), $currentPageCaption == $this->RenderText('Product_old'), false, 'Default'));
-            if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target'), false, 'Default'));
+            if (GetCurrentUserGrantForDataSource('vslc')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Country'), 'country.php', $this->RenderText('Country'), $currentPageCaption == $this->RenderText('Country'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Default'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files'), false, 'Queue'));
+            if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent'), true, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Agent'), 'agent.php', $this->RenderText('Agent'), $currentPageCaption == $this->RenderText('Agent'), false, 'Queue'));
+            if (GetCurrentUserGrantForDataSource('rule')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Rule'), 'rule.php', $this->RenderText('Rule'), $currentPageCaption == $this->RenderText('Rule'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('vqueue_stats')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics'), true, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'uno'));
+                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_lasthour')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour'), false, 'uno'));
+                $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour'), false, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_downloading')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading'), false, 'Statistics'));
             
             if ( HasAdminPage() && GetApplication()->HasAdminGrantForCurrentUser() ) {
               $result->AddGroup('Admin area');
@@ -141,7 +144,7 @@
         protected function CreateGridAdvancedSearchControl(Grid $grid)
         {
             $this->AdvancedSearchControl = new AdvancedSearchControl('vqueue_lasthourasearch', $this->dataset, $this->GetLocalizerCaptions(), $this->GetColumnVariableContainer(), $this->CreateLinkBuilder());
-            $this->AdvancedSearchControl->setTimerInterval(1000);
+            $this->AdvancedSearchControl->setTimerInterval(3000);
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('note', $this->RenderText('Note')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('status', $this->RenderText('Status')));
@@ -154,7 +157,17 @@
     
         protected function AddOperationsColumns(Grid $grid)
         {
-    
+            $actionsBandName = 'actions';
+            $grid->AddBandToBegin($actionsBandName, $this->GetLocalizerCaptions()->GetMessageString('Actions'), true);
+            if ($this->GetSecurityInfo()->HasViewGrant())
+            {
+                $column = new ModalDialogViewRowColumn(
+                    $this->GetLocalizerCaptions()->GetMessageString('View'), $this->dataset,
+                    $this->GetLocalizerCaptions()->GetMessageString('View'),
+                    $this->GetModalGridViewHandler());
+                $grid->AddViewColumn($column, $actionsBandName);
+                $column->SetImagePath('images/view_action.png');
+            }
         }
     
         protected function AddFieldColumns(Grid $grid)
@@ -638,6 +651,8 @@
         {
             return ;
         }
+        public function GetModalGridViewHandler() { return 'vqueue_lasthour_inline_record_view'; }
+        protected function GetEnableModalSingleRecordView() { return true; }
     
         protected function CreateGrid()
         {
@@ -650,8 +665,9 @@
             ApplyCommonPageSettings($this, $result);
             
             $result->SetUseImagesForActions(true);
-            $result->SetUseFixedHeader(true);
-            $result->SetShowLineNumbers(true);
+            $result->SetUseFixedHeader(false);
+            $result->SetShowLineNumbers(false);
+            $result->SetShowKeyColumnsImagesInHeader(false);
             
             $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
