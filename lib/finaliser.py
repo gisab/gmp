@@ -10,63 +10,97 @@
 #                                                         #
 ###########################################################
 
-prjName='gmp'
 APPID  ='finaliser'
 
 import os,sys
-currDir=os.path.realpath(__file__)
-prjFolder=currDir.split(prjName)[0]+prjName
+thisFolder=os.path.dirname(__file__)
+prjFolder=os.path.split(thisFolder)[0]
 sys.path.append(prjFolder+'/lib')
 
 from lxml import etree
 import libQueue
+import dbif
 import config
-import datetime
 import pprint
-import subprocess
-import time
+import json
+import datetime
 import traceback
 
-# config
-repFolder           =config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
-cli                 =config.ini.get(APPID,'cli')
+#config
+mapcliraw   =config.ini.get(APPID,'mapcli')
+mapcli      =json.loads(mapcliraw)
 
-logFile =open('finaliser.log','a')
+logFile =open(prjFolder+'/log/'+ APPID + '.log','a')
 
 def log(logtext):
     #print datetime.datetime.now().isoformat()+' ' + logtext
     logFile.write(datetime.datetime.now().isoformat()+' ' + logtext + '\n')
     logFile.flush()
 
-## finalise the first item in the queue
-def main():
-    #Get the first available item that is downloaded
-    x=libQueue.queue()
-    #resetDownloadQueue for debug purposes
-    #x.resetDownloadQueue()
-    y=x.getItemDownloaded(str(os.getpid()))
-    if y=='#':
-        #no record found
-        return
-    #pprint.pprint(y.__dict__)
-    print "Fianlising %s" % y.id
-    
-    try:
-        import sampleUserAPI
-        sampleUserAPI.main(y)
-    except:
-        traceback.print_exc(file=sys.stdout)
+def mapcliParameters(obj,cli):
+    for ikey in mapcli.keys():
+        if ikey in cli:
+            cli=cli.replace(ikey,obj.__getattribute__(mapcli[ikey]))
+    if '$ALLMETADATA' in cli:
+        cli=cli.replace('$ALLMETADATA',pprint.pformat(obj.__dict__))
+    cli=cli.replace('$PRJ',prjFolder)
+    return cli
 
-    #y.setStatus(libQueue.cdone)
-    #debug
-    tmp=libQueue.cdone
-    #tmp=libQueue.cdwncompleted
-    y.setStatus(tmp)
-    
+## Finalise the items in the queue
+def main():
+    log(APPID +' process starting')
+
+    #Init the queue object
+    x=libQueue.queue()
+
+    #Init the rules
+    try:
+        rules=dbif.getRules()
+        log('Rules succesfully loaded (%s rules found)' % str(len(rules)))
+    except:
+        log('Failed to load the rules')
+        traceback.print_exc(logFile)
+
+    for irule in rules:
+        log("Applying rule %s: " % irule['id'])
+        log("      condition: %s" % irule['condition'])
+        log("      cliaction: %s" % irule['cliaction'])
+        queuedItemsID=x.search(irule['condition']+' and finstatus is null')
+        log("      found %s items" % len(queuedItemsID))
+        for queuedItemID in queuedItemsID:
+            
+            #Create the queueItem object starting from the ID
+            try:
+                queuedItem=libQueue.queuedItem(queuedItemID)
+                log("  Found item %s; object succesfully loaded " % queuedItemID)
+            except:
+                log("  Found item %s; error in initializing the object" % queuedItemID)
+                traceback.print_exc(logFile)
+
+            #prepare the command line
+            cli=irule['cliaction']
+            cli=mapcliParameters(queuedItem, cli)
+            #cli=cli.replace('$ITEM',queuedItemID)
+            #cli=cli.replace('$ALLMETADATA',pprint.pformat(queuedItem.__dict__))
+            
+            #Invoke the command line
+            log("    Invoking cli: %s" %cli)
+            try:
+                os.system(cli)
+                #Flag the item as processed
+                queuedItem.setFinStatus('OK')
+                log("    Execution OK and item succesfully tagged as OK")
+            except:
+                queuedItem.setFinStatus('NOK')
+                log("    Execution FAILED and item tagged as NOK")
+                traceback.print_exc(logFile)
+        pass
+    pass
+    log(APPID +' process completed')
+
 if __name__ == "__main__":
     #Processing arguments from command line
     import argparse
-    parser = argparse.ArgumentParser(description="Fi the first item in the queue")
-    parser.add_argument("--test", action="store_true", dest="test",   help="self test")
+    parser = argparse.ArgumentParser(description="Finalise items in the queue based on config.ini setting")
     args=parser.parse_args()
     main()

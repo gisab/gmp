@@ -76,11 +76,11 @@ class queue(object):
         self.queue=self.db.cur.fetchall()
     
     def search(self,condition):
-        qry="SELECT ID FROM queue where %s order by LAST_UPDATE ASC;" % (condition)
+        qry="SELECT queue.id FROM queue inner join product on queue.id = product.id where %s order by queue.LAST_UPDATE ASC;" % (condition)
         self.db.cur.execute(qry)
         rec=self.db.cur.fetchall()
-        return (item for sublist in rec for item in sublist)
-        
+        return [item for sublist in rec for item in sublist]
+    
     def addItem(self,newItemObj):
         #check that newItem is instance of newItem
         assert isinstance(newItemObj, newItem)
@@ -358,6 +358,8 @@ class queuedItem(object):
         #Get the target characteristic
         self.connection=dbif.getTargetList("id='%s'" % self.targetid)[0]
         self.targettype=self.connection['type']
+        self.rep=self.connection['rep'].replace('$PRJ',prjFolder)
+        self.fullpath=self.rep+os.sep+self.id
 
         #Get the download agent characteristic
         qry="SELECT ID, cli FROM agent where id='%s';" % self.agentid
@@ -414,7 +416,7 @@ class queuedItem(object):
 
     ##Set new status for the object
     def setStatus(self,newStatus):
-        qry="UPDATE queue set STATUS='%s' where ID='%s' and pid='%s';" % (newStatus, self.id, self.pid)
+        qry="UPDATE queue set STATUS='%s' where ID='%s' and targetid='%s';" % (newStatus, self.id, self.targetid)
         self.db.exe(qry)
         self.status=newStatus
         pass
@@ -427,9 +429,15 @@ class queuedItem(object):
         pass
 
     def setDwnStatus(self,newStatus):
-        qry="UPDATE queue set dwnstatus='%s' where ID='%s' and pid='%s';" % (newStatus, self.id, self.pid)
+        qry="UPDATE queue set dwnstatus='%s' where ID='%s' and targetid='%s';" % (newStatus, self.id, self.targetid)
         self.db.exe(qry)
         self.dwnstatus=newStatus
+        pass
+
+    def setFinStatus(self,newStatus):
+        qry="UPDATE queue set finstatus='%s' where ID='%s' and targetid='%s';" % (newStatus, self.id, self.targetid)
+        self.db.exe(qry)
+        self.finstatus=newStatus
         pass
 
     def setFileStatus(self,fileid, newStatus):
@@ -440,7 +448,7 @@ class queuedItem(object):
 
     ##Clean pid attribute, i.e. unlock
     def unlock(self):
-        qry="UPDATE queue set pid=Null where ID='%s' and pid='%s';" % (str(self.id), self.pid)
+        qry="UPDATE queue set pid=Null where ID='%s' and targetid='%s';" % (str(self.id), self.pid)
         self.db.exe(qry)
         pass
     
