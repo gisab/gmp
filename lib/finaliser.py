@@ -13,8 +13,8 @@
 APPID  ='finaliser'
 
 import os,sys
-thisFolder=os.path.dirname(__file__)
-prjFolder=os.path.split(thisFolder)[0]
+thisFolder=os.path.abspath(__file__)
+prjFolder=os.path.split(thisFolder)[0]+os.path.sep+'..'
 sys.path.append(prjFolder+'/lib')
 
 from lxml import etree
@@ -30,7 +30,11 @@ import traceback
 mapcliraw   =config.ini.get(APPID,'mapcli')
 mapcli      =json.loads(mapcliraw)
 
-logFile =open(prjFolder+'/log/'+ APPID + '.log','a')
+logFileName=prjFolder+'/log/'+ APPID + '.log'
+print logFileName
+if not os.path.isfile(logFileName):
+    open(logFileName,'w')
+logFile =open(logFileName,'a')
 
 def log(logtext):
     #print datetime.datetime.now().isoformat()+' ' + logtext
@@ -65,7 +69,7 @@ def main():
         log("Applying rule %s: " % irule['id'])
         log("      condition: %s" % irule['condition'])
         log("      cliaction: %s" % irule['cliaction'])
-        queuedItemsID=x.search(irule['condition']+' and finstatus is null')
+        queuedItemsID=x.search(irule['condition']+" and dwnstatus='C' and finstatus is null ")
         log("      found %s items" % len(queuedItemsID))
         for queuedItemID in queuedItemsID:
             

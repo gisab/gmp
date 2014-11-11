@@ -148,7 +148,7 @@ class product(object):
     
     def catalogue(self):
         wkt=self.footprint
-        qry="SELECT id,`name`, AsText(geom) FROM country WHERE MBRContains(GeomFromText('%s'),geom);" % wkt
+        qry="SELECT id,`name`, AsText(geom) FROM area WHERE MBRContains(GeomFromText('%s'),geom);" % wkt
         db=dbif.gencur(qry)
         res=db.cur.fetchall()
         for icountry in res:
