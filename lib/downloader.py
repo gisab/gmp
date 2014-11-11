@@ -24,10 +24,11 @@ import datetime
 import pprint
 import subprocess
 import time
+import dbif
 
 # config
 maxDwnFilesPerItem  =int(config.ini.get(APPID,'maxDwnFilesPerItem'))
-repFolder           =config.ini.get(APPID,'repository').replace('$PRJ',prjFolder)
+#repFolder           =config.ini.get(APPID,'repository').replace('$PRJ',prjFolder)
 maxBandwidth        =config.ini.get(APPID,'maxBandwidth')
 sleepTimeBetweenFileDownload =int(config.ini.get(APPID,'sleepTimeBetweenFileDownload'))
 performDownload     =True
@@ -64,10 +65,11 @@ def log(logtext):
     logFile.flush()
 
 def getCredential(targetid):
-    dwnappid='plugin'+targetid[0].upper()+targetid[1:].lower()
-    username = config.ini.get(dwnappid,'username')
-    password = config.ini.get(dwnappid,'password')
-    return (username,password)
+    connection=dbif.getTargetList("id='%s'" %targetid)
+    #dwnappid='plugin'+targetid[0].upper()+targetid[1:].lower()
+    #username = config.ini.get(dwnappid,'username')
+    #password = config.ini.get(dwnappid,'password')
+    return connection
 
 ## download the first item in the queue
 def main():
@@ -83,7 +85,9 @@ def main():
     print "Downloading %s" % y.id
     
     #Get credential
-    (username,password)=getCredential(y.targetid)
+    connection=getCredential(y.targetid)[0]
+    #import pprint
+    #pprint.pprint(connection)
     
     #Invoke agents for files to be downloaded
     previousMonitor=dict()
@@ -113,14 +117,14 @@ def main():
             continue
         log('MAIN: Spawning new process ' +newid)
         logf='wget.log'
-        targetFilename=repFolder+ifile['filename']
+        targetFilename=connection['rep']+os.path.sep+ifile['filename']
         targetFolder=os.path.split(targetFilename)[0]
         if not os.path.exists(targetFolder):
             os.makedirs(targetFolder)
             logcmd.write('mkdir -p %s \n' % targetFolder)
         cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
-        cmd=cmd.replace('$USER',username)
-        cmd=cmd.replace('$PASS',password)
+        cmd=cmd.replace('$USER',connection['username'])
+        cmd=cmd.replace('$PASS',connection['password'])
         cmd=cmd.replace('$MAXBANDWIDTH',maxBandwidth)
         cmd=cmd.replace('$','%24')
         #temporary network patch
