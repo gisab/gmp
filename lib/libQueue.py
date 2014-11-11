@@ -656,7 +656,7 @@ def parallelWorkflow():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     q=libQueue.queue()
-    condition="STATUS !='%s' and PID is null and LAST_UPDATE <(now() - INTERVAL 1 MINUTE)" %(ccatalogued)
+    condition="STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 1 MINUTE)" %(ccatalogued)
     qItemList=q.search(condition)
     for qItem in qItemList:
         currMonitor=downloader.monitorChilds(childs)
