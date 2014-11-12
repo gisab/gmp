@@ -25,6 +25,36 @@ sql.append(
 sql.append(
   "update queue set status='NEW' where status='NOK' and pid is null and LAST_UPDATE<(now() - interval 1 hour);")
 
+#Query for searching for interferometric pairs
+sql.append("""
+    INSERT INTO slc (name, area,producttype,relativeorbit)
+    SELECT
+       concat('Area',floor(Area(ST_Intersection(p1.footprint, p2.footprint))/Area(p1.footprint)*100)),
+       ST_Intersection(p1.footprint, p2.footprint),
+       p1.producttype,
+       mod(p1.orbit -73, 175)+1 relorb
+    FROM product p1, product p2
+    WHERE
+       (p1.id != p2.id) and 
+       p1.producttype=p2.producttype and
+       p1.producttype like '%SLC' and
+       p1.producttype not like 'WV%SLC' and
+       p1.slcid is null and
+       p2.slcid is null and
+       mod(p1.orbit,175)=mod(p2.orbit,175) and
+       AsText(ST_Intersection(p1.footprint, p2.footprint)) is not null and
+       Area(ST_Intersection(p1.footprint, p2.footprint))/Area(p1.footprint)>0.6
+    ORDER BY Area(ST_Intersection(p1.footprint, p2.footprint))/Area(p1.footprint) desc limit 1;
+""")
+sql.append("""
+    UPDATE product P INNER JOIN slc S on P.producttype=S.producttype
+    SET P.SLCID=S.ID
+    WHERE
+     P.SLCID is null and
+     mod(P.orbit -73, 175)+1 = S.relativeorbit and
+     Area(ST_Intersection(P.footprint, S.area))/Area(P.footprint)>0.8;
+""")
+
 def main():
     db=dbif.gencur('SELECT * FROM queue')
     for isql in sql:
