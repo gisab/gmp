@@ -1334,8 +1334,12 @@
         {
             $selectQuery = 'SELECT slc.`id`, 
             slc.`name`, 
-            slc.`name` WKT
-            FROM slc';
+            slc.producttype,
+            relativeorbit,
+            count(product.id) NSLC,
+            AsText(area) WKT
+            FROM slc inner join product on slc.id=product.slcid
+            group by slc.id';
             $insertQuery = array();
             $updateQuery = array();
             $deleteQuery = array();
@@ -1347,6 +1351,15 @@
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
             $field = new StringField('name');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('producttype');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new IntegerField('relativeorbit');
+            $field->SetIsNotNull(true);
+            $this->dataset->AddField($field, false);
+            $field = new StringField('NSLC');
             $this->dataset->AddField($field, false);
             $field = new StringField('WKT');
             $this->dataset->AddField($field, false);
@@ -1367,15 +1380,15 @@
         {
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
-            $result->AddGroup('Default');
+            $result->AddGroup('Catalogue');
             $result->AddGroup('Queue');
             $result->AddGroup('Statistics');
             if (GetCurrentUserGrantForDataSource('qProduct')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('vslc')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Default'));
-            if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Catalogue'));
+            if (GetCurrentUserGrantForDataSource('varea')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
@@ -1411,8 +1424,8 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('vslcssearch', $this->dataset,
-                array('id', 'name', 'WKT'),
-                array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('WKT')),
+                array('id', 'name', 'WKT', 'producttype', 'relativeorbit', 'NSLC'),
+                array($this->RenderText('Id'), $this->RenderText('Name'), $this->RenderText('WKT'), $this->RenderText('Producttype'), $this->RenderText('Relativeorbit'), $this->RenderText('NSLC')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -1435,6 +1448,9 @@
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('id', $this->RenderText('Id')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('name', $this->RenderText('Name')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('WKT', $this->RenderText('WKT')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('producttype', $this->RenderText('Producttype')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('relativeorbit', $this->RenderText('Relativeorbit')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('NSLC', $this->RenderText('NSLC')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -1454,7 +1470,7 @@
     
         protected function AddFieldColumns(Grid $grid)
         {
-            if (GetCurrentUserGrantForDataSource('vslc.')->HasViewGrant())
+            if (GetCurrentUserGrantForDataSource('vslc.product')->HasViewGrant())
             {
               //
             // View column for productDetailView0vslc detail
@@ -1489,6 +1505,33 @@
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
+            
+            //
+            // View column for producttype field
+            //
+            $column = new TextViewColumn('producttype', 'Producttype', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
+            
+            //
+            // View column for relativeorbit field
+            //
+            $column = new TextViewColumn('relativeorbit', 'Relativeorbit', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
+            
+            //
+            // View column for NSLC field
+            //
+            $column = new TextViewColumn('NSLC', 'NSLC', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
         }
     
         protected function AddSingleRecordViewColumns(Grid $grid)
@@ -1511,6 +1554,27 @@
             // View column for WKT field
             //
             $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for producttype field
+            //
+            $column = new TextViewColumn('producttype', 'Producttype', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for relativeorbit field
+            //
+            $column = new TextViewColumn('relativeorbit', 'Relativeorbit', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for NSLC field
+            //
+            $column = new TextViewColumn('NSLC', 'NSLC', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
         }
@@ -1546,6 +1610,26 @@
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
+            
+            //
+            // Edit column for producttype field
+            //
+            $editor = new TextEdit('producttype_edit');
+            $editColumn = new CustomEditColumn('Producttype', 'producttype', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddEditColumn($editColumn);
+            
+            //
+            // Edit column for relativeorbit field
+            //
+            $editor = new SpinEdit('relativeorbit_edit');
+            $editColumn = new CustomEditColumn('Relativeorbit', 'relativeorbit', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddEditColumn($editColumn);
         }
     
         protected function AddInsertColumns(Grid $grid)
@@ -1575,6 +1659,26 @@
             //
             $editor = new TextEdit('wkt_edit');
             $editColumn = new CustomEditColumn('WKT', 'WKT', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for producttype field
+            //
+            $editor = new TextEdit('producttype_edit');
+            $editColumn = new CustomEditColumn('Producttype', 'producttype', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for relativeorbit field
+            //
+            $editor = new SpinEdit('relativeorbit_edit');
+            $editColumn = new CustomEditColumn('Relativeorbit', 'relativeorbit', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -1613,6 +1717,27 @@
             $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
+            
+            //
+            // View column for producttype field
+            //
+            $column = new TextViewColumn('producttype', 'Producttype', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddPrintColumn($column);
+            
+            //
+            // View column for relativeorbit field
+            //
+            $column = new TextViewColumn('relativeorbit', 'Relativeorbit', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddPrintColumn($column);
+            
+            //
+            // View column for NSLC field
+            //
+            $column = new TextViewColumn('NSLC', 'NSLC', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddPrintColumn($column);
         }
     
         protected function AddExportColumns(Grid $grid)
@@ -1635,6 +1760,27 @@
             // View column for WKT field
             //
             $column = new TextViewColumn('WKT', 'WKT', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddExportColumn($column);
+            
+            //
+            // View column for producttype field
+            //
+            $column = new TextViewColumn('producttype', 'Producttype', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddExportColumn($column);
+            
+            //
+            // View column for relativeorbit field
+            //
+            $column = new TextViewColumn('relativeorbit', 'Relativeorbit', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddExportColumn($column);
+            
+            //
+            // View column for NSLC field
+            //
+            $column = new TextViewColumn('NSLC', 'NSLC', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
         }
@@ -1690,6 +1836,33 @@
             $result->AddViewColumn($column);
             
             //
+            // View column for producttype field
+            //
+            $column = new TextViewColumn('producttype', 'Producttype', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $result->AddViewColumn($column);
+            
+            //
+            // View column for relativeorbit field
+            //
+            $column = new TextViewColumn('relativeorbit', 'Relativeorbit', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $result->AddViewColumn($column);
+            
+            //
+            // View column for NSLC field
+            //
+            $column = new TextViewColumn('NSLC', 'NSLC', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $result->AddViewColumn($column);
+            
+            //
             // View column for id field
             //
             $column = new TextViewColumn('id', 'Id', $this->dataset);
@@ -1710,6 +1883,27 @@
             $column->SetOrderable(true);
             $result->AddPrintColumn($column);
             
+            //
+            // View column for producttype field
+            //
+            $column = new TextViewColumn('producttype', 'Producttype', $this->dataset);
+            $column->SetOrderable(true);
+            $result->AddPrintColumn($column);
+            
+            //
+            // View column for relativeorbit field
+            //
+            $column = new TextViewColumn('relativeorbit', 'Relativeorbit', $this->dataset);
+            $column->SetOrderable(true);
+            $result->AddPrintColumn($column);
+            
+            //
+            // View column for NSLC field
+            //
+            $column = new TextViewColumn('NSLC', 'NSLC', $this->dataset);
+            $column->SetOrderable(true);
+            $result->AddPrintColumn($column);
+            
             return $result;
         }
         
@@ -1721,6 +1915,13 @@
         function GetOnPageLoadedClientScript()
         {
             return ;
+        }
+        public function vslcGrid_OnGetCustomTemplate($part, $mode, &$result, &$params)
+        {
+        if ($part == PagePart::Grid && $mode == PageMode::ViewAll)
+         {
+           $result = 'SLC.tpl';
+         }
         }
         public function GetModalGridViewHandler() { return 'vslc_inline_record_view'; }
         protected function GetEnableModalSingleRecordView() { return true; }
@@ -1742,6 +1943,7 @@
             
             $result->SetHighlightRowAtHover(true);
             $result->SetWidth('');
+            $this->OnGetCustomTemplate->AddListener('vslcGrid' . '_OnGetCustomTemplate', $this);
             $this->CreateGridSearchControl($result);
             $this->CreateGridAdvancedSearchControl($result);
             $this->AddOperationsColumns($result);
@@ -1770,14 +1972,14 @@
             //
             // Http Handlers
             //
-            $pageView = new productDetailView0vslcPage($this, 'Product', 'Product', array('id'), GetCurrentUserGrantForDataSource('vslc.'), 'UTF-8', 20, 'productDetailEdit0vslc_handler');
+            $pageView = new productDetailView0vslcPage($this, 'Product', 'Product', array('slcid'), GetCurrentUserGrantForDataSource('vslc.product'), 'UTF-8', 20, 'productDetailEdit0vslc_handler');
             
-            $pageView->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('vslc.'));
+            $pageView->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('vslc.product'));
             $handler = new PageHTTPHandler('productDetailView0vslc_handler', $pageView);
             GetApplication()->RegisterHTTPHandler($handler);
-            $pageEdit = new productDetailEdit0vslcPage($this, array('id'), array('id'), $this->GetForeingKeyFields(), $this->CreateMasterDetailRecordGridForproductDetailEdit0vslcGrid(), $this->dataset, GetCurrentUserGrantForDataSource('vslc.'), 'UTF-8');
+            $pageEdit = new productDetailEdit0vslcPage($this, array('slcid'), array('id'), $this->GetForeingKeyFields(), $this->CreateMasterDetailRecordGridForproductDetailEdit0vslcGrid(), $this->dataset, GetCurrentUserGrantForDataSource('vslc.product'), 'UTF-8');
             
-            $pageEdit->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('vslc.'));
+            $pageEdit->SetRecordPermission(GetCurrentUserRecordPermissionsForDataSource('vslc.product'));
             $pageEdit->SetShortCaption('Product');
             $pageEdit->SetHeader(GetPagesHeader());
             $pageEdit->SetFooter(GetPagesFooter());

@@ -82,15 +82,15 @@
         {
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
-            $result->AddGroup('Default');
+            $result->AddGroup('Catalogue');
             $result->AddGroup('Queue');
             $result->AddGroup('Statistics');
             if (GetCurrentUserGrantForDataSource('qProduct')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('vslc')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Default'));
-            if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Catalogue'));
+            if (GetCurrentUserGrantForDataSource('varea')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
@@ -126,8 +126,8 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('targetssearch', $this->dataset,
-                array('id', 'type', 'hostname', 'username', 'password', 'protocol', 'port', 'rep'),
-                array($this->RenderText('Id'), $this->RenderText('Type'), $this->RenderText('Hostname'), $this->RenderText('Username'), $this->RenderText('Password'), $this->RenderText('Protocol'), $this->RenderText('Port'), $this->RenderText('Rep')),
+                array('id', 'type', 'hostname', 'username', 'protocol', 'port', 'rep'),
+                array($this->RenderText('Id'), $this->RenderText('Type'), $this->RenderText('Hostname'), $this->RenderText('Username'), $this->RenderText('Protocol'), $this->RenderText('Port'), $this->RenderText('Rep')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -151,7 +151,6 @@
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('type', $this->RenderText('Type')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('hostname', $this->RenderText('Hostname')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('username', $this->RenderText('Username')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('password', $this->RenderText('Password')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('protocol', $this->RenderText('Protocol')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('port', $this->RenderText('Port')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('rep', $this->RenderText('Rep')));
@@ -287,29 +286,6 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for password field
-            //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
-            $column->SetOrderable(true);
-            
-            /* <inline insert column> */
-            //
-            // Edit column for password field
-            //
-            $editor = new TextEdit('password_edit');
-            $editor->SetSize(64);
-            $editor->SetMaxLength(64);
-            $editColumn = new CustomEditColumn('Password', 'password', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $column->SetInsertOperationColumn($editColumn);
-            /* </inline insert column> */
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
             // View column for protocol field
             //
             $column = new TextViewColumn('protocol', 'Protocol', $this->dataset);
@@ -408,13 +384,6 @@
             // View column for username field
             //
             $column = new TextViewColumn('username', 'Username', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for password field
-            //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
             
@@ -582,13 +551,6 @@
             $grid->AddPrintColumn($column);
             
             //
-            // View column for password field
-            //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
             // View column for protocol field
             //
             $column = new TextViewColumn('protocol', 'Protocol', $this->dataset);
@@ -637,13 +599,6 @@
             // View column for username field
             //
             $column = new TextViewColumn('username', 'Username', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for password field
-            //
-            $column = new TextViewColumn('password', 'Password', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             

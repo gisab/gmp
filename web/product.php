@@ -64,7 +64,6 @@
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
             $field = new StringField('finstatus');
-            $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
         }
     
@@ -235,7 +234,6 @@
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
             $field = new StringField('finstatus');
-            $field->SetIsNotNull(true);
             $this->dataset->AddField($field, false);
         }
     
@@ -904,7 +902,8 @@
             	AsText(product.footprint) footprint, 
             	product.size, 
             	product.tags, 
-            	product.json, 
+            	product.json,
+            	product.slcid,
             	product.LAST_UPDATE, 
             	queue.dwnstatus, 
             	queue.targetid
@@ -943,6 +942,8 @@
             $this->dataset->AddField($field, false);
             $field = new StringField('json');
             $this->dataset->AddField($field, false);
+            $field = new IntegerField('slcid');
+            $this->dataset->AddField($field, false);
             $field = new DateTimeField('LAST_UPDATE');
             $this->dataset->AddField($field, false);
             $field = new StringField('dwnstatus');
@@ -968,15 +969,15 @@
         {
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
-            $result->AddGroup('Default');
+            $result->AddGroup('Catalogue');
             $result->AddGroup('Queue');
             $result->AddGroup('Statistics');
             if (GetCurrentUserGrantForDataSource('qProduct')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('vslc')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Default'));
-            if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Catalogue'));
+            if (GetCurrentUserGrantForDataSource('varea')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
@@ -1012,8 +1013,8 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('qProductssearch', $this->dataset,
-                array('id', 'producttype', 'orbit', 'start', 'dtid', 'stop', 'duration', 'crc', 'polarization', 'footprint', 'size', 'tags', 'json', 'LAST_UPDATE', 'dwnstatus', 'targetid'),
-                array($this->RenderText('Id'), $this->RenderText('Producttype'), $this->RenderText('Orbit'), $this->RenderText('Start'), $this->RenderText('Dtid'), $this->RenderText('Stop'), $this->RenderText('Duration'), $this->RenderText('Crc'), $this->RenderText('Polarization'), $this->RenderText('Footprint'), $this->RenderText('Size'), $this->RenderText('Tags'), $this->RenderText('Json'), $this->RenderText('LAST UPDATE'), $this->RenderText('Dwnstatus'), $this->RenderText('Targetid')),
+                array('id', 'producttype', 'orbit', 'start', 'dtid', 'stop', 'duration', 'crc', 'polarization', 'footprint', 'size', 'tags', 'json', 'LAST_UPDATE', 'dwnstatus', 'targetid', 'slcid'),
+                array($this->RenderText('Id'), $this->RenderText('Producttype'), $this->RenderText('Orbit'), $this->RenderText('Start'), $this->RenderText('Dtid'), $this->RenderText('Stop'), $this->RenderText('Duration'), $this->RenderText('Crc'), $this->RenderText('Polarization'), $this->RenderText('Footprint'), $this->RenderText('Size'), $this->RenderText('Tags'), $this->RenderText('Json'), $this->RenderText('LAST UPDATE'), $this->RenderText('Dwnstatus'), $this->RenderText('Targetid'), $this->RenderText('Slcid')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -1049,6 +1050,7 @@
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateDateTimeSearchInput('LAST_UPDATE', $this->RenderText('LAST UPDATE')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('dwnstatus', $this->RenderText('Dwnstatus')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('targetid', $this->RenderText('Targetid')));
+            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('slcid', $this->RenderText('Slcid')));
         }
     
         protected function AddOperationsColumns(Grid $grid)
@@ -1223,6 +1225,15 @@
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
+            
+            //
+            // View column for slcid field
+            //
+            $column = new TextViewColumn('slcid', 'Slcid', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $grid->AddViewColumn($column);
         }
     
         protected function AddSingleRecordViewColumns(Grid $grid)
@@ -1339,6 +1350,13 @@
             // View column for targetid field
             //
             $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddSingleRecordViewColumn($column);
+            
+            //
+            // View column for slcid field
+            //
+            $column = new TextViewColumn('slcid', 'Slcid', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
         }
@@ -1503,6 +1521,16 @@
             //
             $editor = new TextEdit('targetid_edit');
             $editColumn = new CustomEditColumn('Targetid', 'targetid', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddEditColumn($editColumn);
+            
+            //
+            // Edit column for slcid field
+            //
+            $editor = new SpinEdit('slcid_edit');
+            $editColumn = new CustomEditColumn('Slcid', 'slcid', $editor, $this->dataset);
             $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
@@ -1673,6 +1701,16 @@
             $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddInsertColumn($editColumn);
+            
+            //
+            // Edit column for slcid field
+            //
+            $editor = new SpinEdit('slcid_edit');
+            $editColumn = new CustomEditColumn('Slcid', 'slcid', $editor, $this->dataset);
+            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
+            $editor->GetValidatorCollection()->AddValidator($validator);
+            $this->ApplyCommonColumnEditProperties($editColumn);
+            $grid->AddInsertColumn($editColumn);
             if ($this->GetSecurityInfo()->HasAddGrant())
             {
                 $grid->SetShowAddButton(false);
@@ -1801,6 +1839,13 @@
             $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddPrintColumn($column);
+            
+            //
+            // View column for slcid field
+            //
+            $column = new TextViewColumn('slcid', 'Slcid', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddPrintColumn($column);
         }
     
         protected function AddExportColumns(Grid $grid)
@@ -1917,6 +1962,13 @@
             // View column for targetid field
             //
             $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column->SetOrderable(true);
+            $grid->AddExportColumn($column);
+            
+            //
+            // View column for slcid field
+            //
+            $column = new TextViewColumn('slcid', 'Slcid', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
         }
@@ -2093,6 +2145,15 @@
             $result->AddViewColumn($column);
             
             //
+            // View column for slcid field
+            //
+            $column = new TextViewColumn('slcid', 'Slcid', $this->dataset);
+            $column->SetOrderable(true);
+            $column->SetDescription($this->RenderText(''));
+            $column->SetFixedWidth(null);
+            $result->AddViewColumn($column);
+            
+            //
             // View column for id field
             //
             $column = new TextViewColumn('id', 'Id', $this->dataset);
@@ -2204,6 +2265,13 @@
             // View column for targetid field
             //
             $column = new TextViewColumn('targetid', 'Targetid', $this->dataset);
+            $column->SetOrderable(true);
+            $result->AddPrintColumn($column);
+            
+            //
+            // View column for slcid field
+            //
+            $column = new TextViewColumn('slcid', 'Slcid', $this->dataset);
             $column->SetOrderable(true);
             $result->AddPrintColumn($column);
             

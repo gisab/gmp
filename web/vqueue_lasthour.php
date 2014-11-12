@@ -46,7 +46,7 @@
             $this->dataset->AddField($field, true);
             $field = new StringField('note');
             $field->SetIsNotNull(true);
-            $this->dataset->AddField($field, true);
+            $this->dataset->AddField($field, false);
             $field = new StringField('status');
             $field->SetIsNotNull(true);
             $this->dataset->AddField($field, true);
@@ -80,15 +80,15 @@
         {
             $currentPageCaption = $this->GetShortCaption();
             $result = new PageList($this);
-            $result->AddGroup('Default');
+            $result->AddGroup('Catalogue');
             $result->AddGroup('Queue');
             $result->AddGroup('Statistics');
             if (GetCurrentUserGrantForDataSource('qProduct')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('Product Catalogue'), 'product.php', $this->RenderText('Product Catalogue'), $currentPageCaption == $this->RenderText('Product Catalogue'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('vslc')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Default'));
-            if (GetCurrentUserGrantForDataSource('vcountry')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Default'));
+                $result->AddPage(new PageLink($this->RenderText('SLC'), 'vslc.php', $this->RenderText('SLC Groups'), $currentPageCaption == $this->RenderText('SLC'), false, 'Catalogue'));
+            if (GetCurrentUserGrantForDataSource('varea')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
             if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
