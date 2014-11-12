@@ -56,7 +56,7 @@ def monitorChilds(processList):
     return pids
 
 logFileName=prjFolder+'/log/'+ APPID + '.log'
-print logFileName
+#print logFileName
 if not os.path.isfile(logFileName):
     open(logFileName,'w')
 logFile =open(logFileName,'a')
@@ -86,6 +86,10 @@ def main():
         return
     #pprint.pprint(y.__dict__)
     print "Downloading %s" % y.id
+    
+    #Redirecting the log
+    logFileName=prjFolder+'/log/downloads/'+ y.id + '.log'
+    logFile=open(logFileName,'w')
     
     #Get credential
     connection=getCredential(y.targetid)[0]

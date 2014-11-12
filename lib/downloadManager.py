@@ -53,7 +53,7 @@ def monitorChilds(processList):
     return pids
 
 logFileName=prjFolder+'/log/'+ APPID + '.log'
-print logFileName
+#print logFileName
 if not os.path.isfile(logFileName):
     open(logFileName,'w')
 logFile =open(logFileName,'a')
@@ -90,7 +90,7 @@ def main():
         log('MAIN: Spawning new process ')
         newProc=subprocess.Popen(['/bin/sh', '-c', cli + ' ']);
         childs.append(newProc)
-        time.sleep(1)
+        time.sleep(20)
 
     subprocess.os.wait()
     result=monitorChilds(childs)
