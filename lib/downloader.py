@@ -14,8 +14,8 @@ prjName='gmp'
 APPID  ='downloader'
 
 import os,sys
-currDir=os.path.realpath(__file__)
-prjFolder=currDir.split(prjName)[0]+prjName
+thisFolder=os.path.abspath(__file__)
+prjFolder=os.path.split(thisFolder)[0]+os.path.sep+'..'
 sys.path.append(prjFolder+'/lib')
 
 import libQueue
@@ -55,8 +55,11 @@ def monitorChilds(processList):
     #print pids
     return pids
 
-logFile =open('downloader.log','a')
-logFile.write('\n\n'+'*'.center(80,'*') + '\n\n\n\n')
+logFileName=prjFolder+'/log/'+ APPID + '.log'
+print logFileName
+if not os.path.isfile(logFileName):
+    open(logFileName,'w')
+logFile =open(logFileName,'a')
 logcmd =open('download-commands.log','a')
 
 def log(logtext):
