@@ -52,7 +52,7 @@ sql.append("""
     WHERE
      P.SLCID is null and
      mod(P.orbit -73, 175)+1 = S.relativeorbit and
-     Area(ST_Intersection(P.footprint, S.area))/Area(P.footprint)>0.8;
+     Area(ST_Intersection(P.footprint, S.area))/Area(P.footprint)>0.6;
 """)
 
 def main():
