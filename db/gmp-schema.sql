@@ -30,13 +30,13 @@ CREATE TABLE `agent` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `country`
+-- Table structure for table `area`
 --
 
-DROP TABLE IF EXISTS `country`;
+DROP TABLE IF EXISTS `area`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `country` (
+CREATE TABLE `area` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL,
   `wkt` varchar(2000) NOT NULL,
@@ -92,6 +92,7 @@ CREATE TABLE `product` (
   `size` bigint(20) DEFAULT NULL,
   `tags` varchar(2000) DEFAULT NULL,
   `json` varchar(2000) DEFAULT NULL,
+  `slcid` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk5` (`producttype`) USING HASH,
   KEY `fk6` (`dtid`) USING BTREE,
@@ -100,7 +101,8 @@ CREATE TABLE `product` (
   KEY `fk9` (`duration`) USING BTREE,
   SPATIAL KEY `geom` (`footprint`),
   KEY `idx` (`tags`(1000)) USING BTREE,
-  KEY `idx2` (`json`(1000)) USING BTREE
+  KEY `idx2` (`json`(1000)) USING BTREE,
+  KEY `islc` (`slcid`) USING BTREE
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -146,18 +148,20 @@ DROP TABLE IF EXISTS `queue`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `queue` (
   `id` varchar(128) NOT NULL COMMENT 'client id',
-  `note` varchar(128) NOT NULL DEFAULT '',
+  `note` varchar(2000) NOT NULL DEFAULT '',
   `status` varchar(16) NOT NULL,
-  `dwnstatus` enum('N','C','Q') NOT NULL DEFAULT 'N',
+  `dwnstatus` enum('N','C','Q','A') NOT NULL DEFAULT 'N',
   `LAST_UPDATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pid` varchar(8) DEFAULT NULL,
   `agentid` varchar(10) DEFAULT NULL,
   `targetid` varchar(10) NOT NULL DEFAULT '',
+  `finstatus` enum('OK','NOK') DEFAULT NULL,
   PRIMARY KEY (`id`,`targetid`),
   KEY `iid` (`id`) USING BTREE,
   KEY `ipid` (`pid`) USING BTREE,
   KEY `istatus` (`status`) USING BTREE,
-  KEY `dstatus` (`dwnstatus`) USING BTREE
+  KEY `dstatus` (`dwnstatus`) USING BTREE,
+  KEY `fstatus` (`finstatus`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -194,6 +198,60 @@ IF (new.dwnstatus!=old.dwnstatus and new.dwnstatus='Q' )THEN
   UPDATE files set `dwnstatus`= new.dwnstatus where files.qid=new.id;
 END IF;
 END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `rule`
+--
+
+DROP TABLE IF EXISTS `rule`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rule` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `isactive` enum('Y','N') NOT NULL DEFAULT 'N',
+  `condition` varchar(2000) NOT NULL DEFAULT 'True' COMMENT 'The condition is expressed as a where criteria applied to (queue join product) table',
+  `cliaction` varchar(2000) NOT NULL DEFAULT 'echo $ITEM' COMMENT 'A linux command line on which item is passed as argument',
+  `LAST_UPDATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `description` varchar(2000) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i1` (`isactive`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `slc`
+--
+
+DROP TABLE IF EXISTS `slc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `slc` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `area` geometry NOT NULL,
+  `producttype` varchar(8) NOT NULL,
+  `relativeorbit` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  SPATIAL KEY `area` (`area`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `onins` BEFORE INSERT ON `slc` FOR EACH ROW if new.name is null THEN
+  set new.name=concat('Pair',new.id);
+end if */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -423,4 +481,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-10-22 12:06:45
+-- Dump completed on 2014-11-16 15:02:20
