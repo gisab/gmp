@@ -173,15 +173,6 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(false);
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
             // View column for size field
             //
             $column = new TextViewColumn('size', 'Size', $this->dataset);
@@ -352,8 +343,8 @@
         {
             $grid->UseFilter = true;
             $grid->SearchControl = new SimpleSearch('productDetailEdit0vslcssearch', $this->dataset,
-                array('id', 'LAST_UPDATE', 'producttype', 'orbit', 'dtid', 'start', 'stop', 'duration', 'crc', 'polarization', 'footprint', 'size', 'tags', 'json', 'slcid'),
-                array($this->RenderText('Id'), $this->RenderText('LAST UPDATE'), $this->RenderText('Producttype'), $this->RenderText('Orbit'), $this->RenderText('Dtid'), $this->RenderText('Start'), $this->RenderText('Stop'), $this->RenderText('Duration'), $this->RenderText('Crc'), $this->RenderText('Polarization'), $this->RenderText('Footprint'), $this->RenderText('Size'), $this->RenderText('Tags'), $this->RenderText('Json'), $this->RenderText('Slcid')),
+                array('id', 'LAST_UPDATE', 'producttype', 'orbit', 'dtid', 'start', 'stop', 'duration', 'crc', 'polarization', 'size', 'tags', 'json', 'slcid'),
+                array($this->RenderText('Id'), $this->RenderText('LAST UPDATE'), $this->RenderText('Producttype'), $this->RenderText('Orbit'), $this->RenderText('Dtid'), $this->RenderText('Start'), $this->RenderText('Stop'), $this->RenderText('Duration'), $this->RenderText('Crc'), $this->RenderText('Polarization'), $this->RenderText('Size'), $this->RenderText('Tags'), $this->RenderText('Json'), $this->RenderText('Slcid')),
                 array(
                     '=' => $this->GetLocalizerCaptions()->GetMessageString('equals'),
                     '<>' => $this->GetLocalizerCaptions()->GetMessageString('doesNotEquals'),
@@ -383,7 +374,6 @@
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('duration', $this->RenderText('Duration')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('crc', $this->RenderText('Crc')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('polarization', $this->RenderText('Polarization')));
-            $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('footprint', $this->RenderText('Footprint')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('size', $this->RenderText('Size')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('tags', $this->RenderText('Tags')));
             $this->AdvancedSearchControl->AddSearchColumn($this->AdvancedSearchControl->CreateStringSearchInput('json', $this->RenderText('Json')));
@@ -508,15 +498,6 @@
             $grid->AddViewColumn($column);
             
             //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(true);
-            $column->SetDescription($this->RenderText(''));
-            $column->SetFixedWidth(null);
-            $grid->AddViewColumn($column);
-            
-            //
             // View column for size field
             //
             $column = new TextViewColumn('size', 'Size', $this->dataset);
@@ -631,13 +612,6 @@
             // View column for polarization field
             //
             $column = new TextViewColumn('polarization', 'Polarization', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddSingleRecordViewColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddSingleRecordViewColumn($column);
             
@@ -774,16 +748,6 @@
             $editor->SetMaxLength(2);
             $editColumn = new CustomEditColumn('Polarization', 'polarization', $editor, $this->dataset);
             $editColumn->SetAllowSetToNull(true);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddEditColumn($editColumn);
-            
-            //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
             $this->ApplyCommonColumnEditProperties($editColumn);
             $grid->AddEditColumn($editColumn);
             
@@ -929,16 +893,6 @@
             $grid->AddInsertColumn($editColumn);
             
             //
-            // Edit column for footprint field
-            //
-            $editor = new TextEdit('footprint_edit');
-            $editColumn = new CustomEditColumn('Footprint', 'footprint', $editor, $this->dataset);
-            $validator = new RequiredValidator(StringUtils::Format($this->GetLocalizerCaptions()->GetMessageString('RequiredValidationMessage'), $this->RenderText($editColumn->GetCaption())));
-            $editor->GetValidatorCollection()->AddValidator($validator);
-            $this->ApplyCommonColumnEditProperties($editColumn);
-            $grid->AddInsertColumn($editColumn);
-            
-            //
             // Edit column for size field
             //
             $editor = new TextEdit('size_edit');
@@ -1061,13 +1015,6 @@
             $grid->AddPrintColumn($column);
             
             //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddPrintColumn($column);
-            
-            //
             // View column for size field
             //
             $column = new TextViewColumn('size', 'Size', $this->dataset);
@@ -1168,13 +1115,6 @@
             // View column for polarization field
             //
             $column = new TextViewColumn('polarization', 'Polarization', $this->dataset);
-            $column->SetOrderable(true);
-            $grid->AddExportColumn($column);
-            
-            //
-            // View column for footprint field
-            //
-            $column = new TextViewColumn('footprint', 'Footprint', $this->dataset);
             $column->SetOrderable(true);
             $grid->AddExportColumn($column);
             
