@@ -448,7 +448,7 @@ class queuedItem(object):
 
     ##Clean pid attribute, i.e. unlock
     def unlock(self):
-        qry="UPDATE queue set pid=Null where ID='%s' and targetid='%s';" % (str(self.id), self.pid)
+        qry="UPDATE queue set pid=Null where ID='%s' and targetid='%s';" % (str(self.id), self.targetid)
         self.db.exe(qry)
         pass
     
@@ -674,7 +674,7 @@ def parallelWorkflow():
             for i in diff:
                 print "MAIN: Completed " + status + " process " +str(i)
         previousMonitor=currMonitor
-        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>%s/log/prod/%s.log 2>%s/log/prod/%s.log" % (prjFolder, qItem, prjFolder, qItem, prjFolder, qItem)
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>>%s/log/prod/%s.log 2>>%s/log/prod/%s.log" % (prjFolder, qItem, prjFolder, qItem, prjFolder, qItem)
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         proc=dict()
