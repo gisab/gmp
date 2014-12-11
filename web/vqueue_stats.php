@@ -189,7 +189,9 @@
             // View column for nrec field
             //
             $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
+            $grid->SetTotal($column, PredefinedAggregate::$Sum);
             $column->SetOrderable(true);
+            $column = new NumberFormatValueViewColumnDecorator($column, 0, '.', '');
             $column->SetDescription($this->RenderText(''));
             $column->SetFixedWidth(null);
             $grid->AddViewColumn($column);
@@ -223,6 +225,7 @@
             //
             $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
             $column->SetOrderable(true);
+            $column = new NumberFormatValueViewColumnDecorator($column, 0, '.', '');
             $grid->AddSingleRecordViewColumn($column);
         }
     
@@ -366,6 +369,7 @@
             //
             $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
             $column->SetOrderable(true);
+            $column = new NumberFormatValueViewColumnDecorator($column, 0, '.', '');
             $grid->AddPrintColumn($column);
         }
     
@@ -397,6 +401,7 @@
             //
             $column = new TextViewColumn('nrec', 'Nrec', $this->dataset);
             $column->SetOrderable(true);
+            $column = new NumberFormatValueViewColumnDecorator($column, 0, '.', '');
             $grid->AddExportColumn($column);
         }
     

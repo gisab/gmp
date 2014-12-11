@@ -30,17 +30,23 @@
     
     
     // OnBeforePageExecute event handler
-    
+    if(isset($_COOKIE['filter']) and $_COOKIE['filter']!=''){
+      $qwhere="MBRContains(GeomFromText('" . urldecode($_COOKIE['filter']) . "'),footprint)";
+    } else {
+      $qwhere='True';
+    }
+    //global $qwhere;
+    //$selectQuery = 'select * from product where '.$qwhere;
     
     
     class vareaPage extends Page
     {
         protected function DoBeforeCreate()
         {
-            $selectQuery = 'SELECT area.`id`, 
+            global $qwhere;$selectQuery = 'SELECT area.`id`, 
             area.`name`, 
             	AsText(area.geom) WKT
-            FROM area';
+            FROM area where '.$qwhere;
             $insertQuery = array();
             $updateQuery = array();
             $deleteQuery = array();

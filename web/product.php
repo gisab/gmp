@@ -890,7 +890,7 @@
     {
         protected function DoBeforeCreate()
         {
-            $selectQuery = 'SELECT product.id, 
+            global $qwhere;$selectQuery = 'SELECT product.id, 
             	product.producttype, 
             	product.orbit, 
             	product.`start`, 
@@ -907,7 +907,7 @@
             	product.LAST_UPDATE, 
             	queue.dwnstatus, 
             	queue.targetid
-            FROM queue INNER JOIN product ON queue.id = product.id';
+            FROM queue INNER JOIN product ON queue.id = product.id where '.$qwhere;
             $insertQuery = array();
             $updateQuery = array();
             $deleteQuery = array();

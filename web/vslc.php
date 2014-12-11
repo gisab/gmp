@@ -1265,20 +1265,26 @@
     }
     
     // OnBeforePageExecute event handler
-    
+    if(isset($_COOKIE['filter']) and $_COOKIE['filter']!=''){
+      $qwhere="MBRContains(GeomFromText('" . urldecode($_COOKIE['filter']) . "'),footprint)";
+    } else {
+      $qwhere='True';
+    }
+    //global $qwhere;
+    //$selectQuery = 'select * from product where '.$qwhere;
     
     
     class vslcPage extends Page
     {
         protected function DoBeforeCreate()
         {
-            $selectQuery = 'SELECT slc.`id`, 
+            global $qwhere;$selectQuery = 'SELECT slc.`id`, 
             slc.`name`, 
             slc.producttype,
             relativeorbit,
             count(product.id) NSLC,
             AsText(area) WKT
-            FROM slc inner join product on slc.id=product.slcid
+            FROM slc inner join product on slc.id=product.slcid  where '.$qwhere.'
             group by slc.id';
             $insertQuery = array();
             $updateQuery = array();
