@@ -742,6 +742,7 @@ def process(id):
     if x.status in (cmetadataparsed):
         try:
             print "catalouging" 
+            x.product.reload()
             x.product.catalogue()
             x.setStatus(ccatalogued)
         except:

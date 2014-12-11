@@ -42,10 +42,14 @@ class product(object):
         if init=='#':
             print "product ID is missing"
             return
+        self.productid=init
         self.db=dbif.gencur()
         self.getProduct(init)
         pass
     
+    def reload(self):
+        self.getProduct(init)
+        
     def getProduct(self,productID):
         fields=('id','producttype','start','stop','duration','orbit','crc','footprint','polarization','tags','json')
         qry='`, `'.join(fields)
