@@ -1,0 +1,3 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+*/10 * * * * root run-parts /usr/local/gmp/os-configuration/cron.5min
