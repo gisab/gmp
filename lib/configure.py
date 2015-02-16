@@ -25,6 +25,7 @@ import argparse
 APPID  ='configure'
 config_ini=config.getPath(APPID,'config_ini')
 php_setting=config.getPath(APPID,'php_setting')
+php_setting2=config.getPath(APPID,'php_setting2')
 resourcefile=config.getPath(APPID,'resourcefile')
 
 class configure():
@@ -73,6 +74,12 @@ class configure():
             'regex'   :php_map,
             'pattern' :"(' => ')([A-Za-z0-9.\-]+)(')"
              })
+
+        self.gmap.append({
+            'file'    :php_setting2,
+            'regex'   :php_map,
+            'pattern' :"(' => ')([A-Za-z0-9.\-]+)(')"
+             })
             
     def ask_user(self):
         print "Please entry the parameter for connecting to the MySQL db and Product Archive services"
@@ -98,7 +105,11 @@ class configure():
         #configure files
         for imap in self.gmap:
             print "Procesing file %s" % imap['file']
-            ifile=open(imap['file'],'r').read()
+            try:
+                ifile=open(imap['file'],'r').read()
+            except:
+                print "file %s not found" % imap['file']
+                continue
             ipattern=imap['pattern']
             for ireg in imap['regex']:
                 rsearch='(' +ireg[0] + ')' + ipattern
