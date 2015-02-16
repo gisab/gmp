@@ -1,0 +1,10 @@
+PYTHONEX=/opt/rh/python27/root/usr/bin/python2.7
+pidfolder=log/pid/
+logfolder=log/
+libQueue_fh=301
+pluginoda_fh=302
+dbcron_fh=303
+downloader_fh=304
+downloadmanager_fh=305
+finaliser_fh=306
+pluginDhus_fh=307

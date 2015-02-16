@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+prjfolder=$(dirname $0)/../
+source ${prjfolder}/bin/gmp-env
+myself=$(basename $0)
+mlog=${prjfolder}/$logfolder/$myself.log
+mpid=${prjfolder}/$pidfolder/$myself.pid
+
+cd $prjfolder/lib
+echo `date` " Starting " >>$mlog
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rh/python27/root/usr/lib64/
+$PYTHONEX ./pluginOda.py --run  >> $mlog
+echo `date` " Completed " >>$mlog
+

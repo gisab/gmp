@@ -1,0 +1,23 @@
+#!/bin/bash
+
+prjfolder=$(dirname $0)/../
+source ${prjfolder}/bin/gmp-env
+myself=$(basename $0)
+mlog=${prjfolder}/$logfolder/$myself.log
+mpid=${prjfolder}/$pidfolder/$myself.pid
+
+app="downloadmanager"
+tmp=${app}_fh
+#With the following statement fh will get the value decalred in gmp-env file
+#for the variable $tmp, i.e. libqueue_fh
+fh=${!tmp}
+
+eval "exec $fh>$mpid"
+eval "flock -x -w 1 -e $fh || exit 1" 
+
+echo `date` " Starting  ${prjfolder}/bin/${app} " >> $mlog
+alog=${prjfolder}/log/${app}.log
+${prjfolder}/bin/${app} 1>>$alog 2>>$alog
+
+echo `date` " Completed " >> $mlog
+
