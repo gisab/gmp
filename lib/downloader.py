@@ -60,7 +60,7 @@ logFileName=prjFolder+'/log/'+ APPID + '.log'
 if not os.path.isfile(logFileName):
     open(logFileName,'w')
 logFile =open(logFileName,'a')
-logcmd =open('download-commands.log','a')
+#logcmd =open('download-commands.log','a')
 
 def log(logtext):
     #print datetime.datetime.now().isoformat()+' ' + logtext
@@ -128,7 +128,7 @@ def main():
         targetFolder=os.path.split(targetFilename)[0]
         if not os.path.exists(targetFolder):
             os.makedirs(targetFolder)
-            logcmd.write('mkdir -p %s \n' % targetFolder)
+            #logcmd.write('mkdir -p %s \n' % targetFolder)
         cmd=y.agentcli.replace('$LOG', logf).replace('$FILENAME', targetFilename).replace('$URL', ifile['url'])+ ' 2>> ' + logf + ' 1>> ' + logf
         cmd=cmd.replace('$USER',connection['username'])
         cmd=cmd.replace('$PASS',connection['password'])
@@ -139,7 +139,7 @@ def main():
             cmd=cmd.replace('s1-pac1dmz-oda-v-20.sentinel1.eo.esa.int:80','localhost:14002')
             print cmd
         log(cmd)
-        logcmd.write(cmd+'\n')
+        #logcmd.write(cmd+'\n')
         if performDownload:
             newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
             proc=dict()
