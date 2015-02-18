@@ -48,7 +48,7 @@ class product(object):
         pass
     
     def reload(self):
-        self.getProduct(init)
+        self.getProduct(self.productid)
         
     def getProduct(self,productID):
         fields=('id','producttype','start','stop','duration','orbit','crc','footprint','polarization','tags','json')
