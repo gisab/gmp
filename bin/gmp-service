@@ -9,13 +9,13 @@ CRON=cron.5min
 
 start() {
   cd $HOME
-  rmdir $CRON
+  rm -Rf $CRON
   ln -s $CRON.offline $CRON
 }
 
 stop() {
   cd $HOME
-  unlink $CRON
+  rm -Rf $CRON
   mkdir $CRON
 }
 
