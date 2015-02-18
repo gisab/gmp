@@ -1,6 +1,6 @@
 #!/bin/bash
 
-prjfolder=$(dirname $0)/../
+prjfolder=/usr/local/gmp/
 source ${prjfolder}/bin/gmp-env
 myself=$(basename $0)
 mlog=${prjfolder}/$logfolder/$myself.log
