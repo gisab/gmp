@@ -1,0 +1,42 @@
+#!/bin/bash
+# Source function library.
+#. /etc/rc.d/init.d/functions
+
+set -e
+
+PRJ=/usr/local/gmp/os-configuration
+CRON=cron.5min
+
+start() {
+  cd $HOME
+  rmdir $CRON
+  ln -s $CRON.offline $CRON
+}
+
+stop() {
+  cd $HOME
+  unlink $CRON
+  mkdir $CRON
+}
+
+status() {
+  cd $HOME
+  find $CRON -maxdepth 0 -empty -exec echo GMP is stopped. \;
+  find $CRON -maxdepth 0 -not -empty -exec echo GMP is scheduled with crond. \;
+}
+
+case "$1" in
+    start)
+        $1
+        ;;
+    stop)
+        $1
+        ;;
+    status)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status}"
+        exit 2
+esac
+exit $?
