@@ -8,19 +8,19 @@ PRJ=/usr/local/gmp/os-configuration
 CRON=cron.5min
 
 start() {
-  cd $HOME
+  cd $PRJ
   rm -Rf $CRON
   ln -s $CRON.offline $CRON
 }
 
 stop() {
-  cd $HOME
+  cd $PRJ
   rm -Rf $CRON
   mkdir $CRON
 }
 
 status() {
-  cd $HOME
+  cd $PRJ
   find $CRON -maxdepth 0 -empty -exec echo GMP is stopped. \;
   find $CRON -maxdepth 0 -not -empty -exec echo GMP is scheduled with crond. \;
 }
