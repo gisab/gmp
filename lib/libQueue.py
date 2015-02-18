@@ -61,7 +61,7 @@ cDwnStatusCompleted ='C'
 
 rep           =config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
 
-pythonex='/usr/local/bin/python2.7'
+pythonex=config.ini.get('general','pythonex')
 
 class queue(object):
     def __init__(self,init='#'):
@@ -650,7 +650,7 @@ def serialWorkflow():
 def parallelWorkflow():
     pid=str(os.getpid())
     import downloader
-    maxParallelItem=20
+    maxParallelItem=10
     sleepTimeForWaitingChilds=1
     childs=list()
     previousMonitor=dict()
