@@ -16,6 +16,7 @@ prjFolder=os.path.split(thisFolder)[0]
 sys.path.append(prjFolder+'/lib')
 
 import dbif
+import datetime
 
 sql=list()
 sql.append(
@@ -106,12 +107,14 @@ def main():
     db=dbif.gencur('SELECT * FROM queue')
     for isql in sql:
         out=isql.strip().replace('\n',' ')[:50]
+        start = datetime.datetime.now()
         try:
             db.exe(isql)
             out+= ' OK'
         except:
             out+= ' ERROR'
-        print out
+        duration = datetime.datetime.now() - start
+        print out + '(%s sec)' % duration.seconds
     pass
 
 if __name__ == "__main__":
