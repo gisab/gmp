@@ -25,6 +25,10 @@ sql.append(
 sql.append(
   "update queue set status='NEW' where status='NOK' and pid is null and LAST_UPDATE<(now() - interval 1 hour);")
 
+sql.append(
+  "delete from files where LAST_UPDATE <(now() - INTERVAL 30 DAY);")
+
+
 #Query for searching for interferometric pairs
 sql.append("""
     INSERT INTO slc (name, area,producttype,relativeorbit)
