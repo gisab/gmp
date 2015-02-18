@@ -52,6 +52,7 @@ chasmetalink   ="HASMETALINK"
 chasmetadata   ="HASMETADATA"
 cmetadataparsed="METADATAPARSED"
 ccatalogued    ="CATALOGUED"
+cnok           ="NOK"
 
 #global constant for file queue workflow
 cDwnStatusNo        ='N'
@@ -656,7 +657,7 @@ def parallelWorkflow():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     q=libQueue.queue()
-    condition="STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 1 MINUTE)" %(ccatalogued)
+    condition="STATUS !='%s' and STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 3 MINUTE)" %(ccatalogued, cnok)
     qItemList=q.search(condition)
     for qItem in qItemList:
         currMonitor=downloader.monitorChilds(childs)
