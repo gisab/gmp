@@ -61,7 +61,7 @@ sql.append("""
 """)
 '''
 
-sql.append("truncate table product_slc;")
+sql.append("truncate table product_slc;                              ")
 sql.append("""insert into product_slc (productid, slcid, area_intersection, area_product)
 SELECT P.id, S.id,
     st_area(st_intersection(P.footprint, S.area)),
@@ -114,7 +114,7 @@ def main():
         except:
             out+= ' ERROR'
         duration = datetime.datetime.now() - start
-        print out + '(%s sec)' % duration.seconds
+        print out + ' (%s sec)' % duration.seconds
     pass
 
 if __name__ == "__main__":

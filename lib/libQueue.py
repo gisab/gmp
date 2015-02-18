@@ -31,6 +31,7 @@ import traceback
 import libProduct
 import json
 import subprocess
+import datetime
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -651,7 +652,7 @@ def parallelWorkflow():
     pid=str(os.getpid())
     import downloader
     maxParallelItem=10
-    sleepTimeForWaitingChilds=1
+    sleepTimeForWaitingChilds=5
     childs=list()
     previousMonitor=dict()
     previousMonitor['failed']=list()
@@ -714,13 +715,18 @@ def process(id):
     print "processing product %s" % id
     #print x.status, cnew
     if x.status.upper() in (cnew, ):
+        start = datetime.datetime.now()
+        gmres='NOK'
         try:
             print "getting metalink" 
             x.getMetalink()
             x.setStatus(chasmetalink)
+            gmres='OK'
         except:
             traceback.print_exc(file=sys.stdout)
             x.setStatus('NOK')
+        duration = datetime.datetime.now() - start
+        print 'getting metalink: %s ; elapsed time: %s sec' % (gmres, duration.seconds)
 
     if x.status in (chasmetalink):
         try:
