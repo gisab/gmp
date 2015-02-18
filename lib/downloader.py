@@ -88,8 +88,8 @@ def main():
     print "Downloading %s" % y.id
     
     #Redirecting the log
-    logFileName=prjFolder+'/log/downloads/'+ y.id + '.log'
-    logFile=open(logFileName,'w')
+    #logFileName=prjFolder+'/log/downloads/'+ y.id + '.log'
+    #logFile=open(logFileName,'w')
     
     #Get credential
     connection=getCredential(y.targetid)[0]
