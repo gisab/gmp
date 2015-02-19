@@ -95,7 +95,13 @@ CREATE TABLE `target` (
 
 LOCK TABLES `target` WRITE;
 /*!40000 ALTER TABLE `target` DISABLE KEYS */;
-INSERT INTO `target` VALUES ('cgs1oda','oda','131.176.233.8','myusername','password','http',80,'$PRJ/rep/cgs1'),('cgs2oda','oda','131.176.233.72','myusername','password','http',80,'$PRJ/rep/cgs2'),('pac1oda','oda','131.176.234.8','myusername','password','http',80,'$PRJ/rep/pac1'),('scihub','dhus','131.176.236.10','myusername','password','https',443,'$PRJ/rep/scihub');
+INSERT INTO `target` VALUES
+('cgs1oda','oda','131.176.233.8',  'myusername','password','http',80,'$PRJ/rep/cgs1'),
+('cgs2oda','oda','131.176.233.72', 'myusername','password','http',80,'$PRJ/rep/cgs2'),
+('cgs3oda','oda','131.176.233.136','myusername','password','http',80,'$PRJ/rep/cgs3'),
+('pac1oda','oda','131.176.234.8',  'myusername','password','http',80,'$PRJ/rep/pac1'),
+('pac2oda','oda','131.176.234.72', 'myusername','password','http',80,'$PRJ/rep/pac2'),
+('scihub','dhus','131.176.236.10', 'myusername','password','https',443,'$PRJ/rep/scihub');
 /*!40000 ALTER TABLE `target` ENABLE KEYS */;
 UNLOCK TABLES;
 
