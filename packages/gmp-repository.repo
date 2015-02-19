@@ -1,0 +1,5 @@
+[GMP]
+name=GMP RPM Repository
+baseurl=http://cpds.sentinel1.eo.esa.int/gmp-repository/rpm/
+enabled=1
+gpgcheck=0
