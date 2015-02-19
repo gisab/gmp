@@ -26,7 +26,8 @@ import subprocess
 import time
 
 # config
-cli            =config.ini.get(APPID,'cli').replace('$PRJ',prjFolder)
+pythonex       =config.ini.get('general','pythonex')
+cli            =config.ini.get(APPID,'cli').replace('$PRJ',prjFolder).replace('$PYTHONEX',pythonex)
 maxDownloader  =int(config.ini.get(APPID,'maxDownloader'))
 sleepTimeBetweenDownloader =int(config.ini.get(APPID,'sleepTimeBetweenDownloader').replace('$PRJ',prjFolder))
 
