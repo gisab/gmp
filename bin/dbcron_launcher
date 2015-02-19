@@ -19,9 +19,9 @@ echo `date` " Starting  ${prjfolder}/bin/${app} " >> $mlog
 alog=${prjfolder}/log/${app}.log
 ${prjfolder}/bin/${app} 1>>$alog 2>>$alog
 
-#as dbcron should run each hour, added a sleep for not retriggering dbcron each 5 minutes
-echo `date` " Sleeping for 50 minutes " >> $mlog
-sleep 3000
+#in case of interferometric pair discovery, dbcron should run each hour, added a sleep for not retriggering dbcron each 5 minutes
+#echo `date` " Sleeping for 50 minutes " >> $mlog
+#sleep 3000
 
 echo `date` " Completed " >> $mlog
 

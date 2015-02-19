@@ -31,6 +31,7 @@ sql.append(
 
 
 #Query for searching for interferometric pairs
+'''
 sql.append("""
     INSERT INTO slc (name, area,producttype,relativeorbit)
     SELECT
@@ -51,15 +52,6 @@ sql.append("""
        Area(ST_Intersection(p1.footprint, p2.footprint))/Area(p1.footprint)>0.6
     ORDER BY Area(ST_Intersection(p1.footprint, p2.footprint))/Area(p1.footprint) desc limit 10;
 """)
-'''sql.append("""
-    UPDATE product P INNER JOIN slc S on P.producttype=S.producttype
-    SET P.SLCID=S.ID
-    WHERE
-     P.SLCID is null and
-     mod(P.orbit -73, 175)+1 = S.relativeorbit and
-     Area(ST_Intersection(P.footprint, S.area))/Area(P.footprint)>0.7;
-""")
-'''
 
 sql.append("truncate table product_slc;                              ")
 sql.append("""insert into product_slc (productid, slcid, area_intersection, area_product)
@@ -101,7 +93,7 @@ SET S.name =A.name
 WHERE substr(S.name,1,4)='Area' and
 Area(ST_Intersection(S.area, A.geom))/Area(S.area)>0.2;
 """)
-
+'''
 
 def main():
     db=dbif.gencur('SELECT * FROM queue')
