@@ -11,11 +11,38 @@ tmp=${app}_fh
 #With the following statement fh will get the value decalred in gmp-env file
 #for the variable $tmp, i.e. libqueue_fh
 fh=${!tmp}
+tmp=${app}_timeout
+timeout=${!tmp}
+
+echo '------- Starting  at ' `date` >>$mlog
+
+#Check if process is a zombie, i.e. dead but running for more than $timeout (ddhhmmss)
+
+# Get all PIDs for process name
+procs=(`ps aux | grep  $myself | grep bash | awk '{print $2}'`)
+
+# for each PID in PIDs array
+for pid in $procs; do
+    # get elapsed time in form mm:ss and remove ":" character
+    # to make it easier to parse time 
+    time=(`ps -o etime $pid | sed -e 's/[:-]//g'`)
+    # get minutes from time
+    min=${time[1]}
+    # if proces runs 5 minutes then kill it
+    if [ "$min" -gt $timeout ]; then
+        #kill -9 $pid
+        echo "WARNING Process $pid is running for more than $timeout; killing it" >>$LOG 2>>$LOG
+        echo `ps -o etime $pid` >>$LOG 2>>$LOG
+        kill $pid
+    fi
+done;
+
 
 eval "exec $fh>$mpid"
 eval "flock -x -w 1 -e $fh || exit 1" 
 
-echo `date` " Starting  ${prjfolder}/bin/${app} " >> $mlog
+echo `date` " Calling  ${prjfolder}/bin/${app} " >> $mlog
+
 alog=${prjfolder}/log/${app}.log
 ${prjfolder}/bin/${app} 1>>$alog 2>>$alog
 
