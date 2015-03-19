@@ -883,14 +883,14 @@
       $qwhere='True';
     }
     //global $qwhere;
-    //$selectQuery = 'select * from product where '.$qwhere;
+    //global $qwhere; $selectQuery = ' select * from product where '.$qwhere;
     
     
     class qProductPage extends Page
     {
         protected function DoBeforeCreate()
         {
-            global $qwhere;$selectQuery = 'SELECT product.id, 
+            global $qwhere; $selectQuery = ' SELECT product.id, 
             	product.producttype, 
             	product.orbit, 
             	product.`start`, 
@@ -907,7 +907,8 @@
             	product.LAST_UPDATE, 
             	queue.dwnstatus, 
             	queue.targetid
-            FROM queue INNER JOIN product ON queue.id = product.id where '.$qwhere;
+            FROM queue INNER JOIN product ON queue.id = product.id
+            WHERE '. $qwhere .'';
             $insertQuery = array();
             $updateQuery = array();
             $deleteQuery = array();
@@ -980,8 +981,6 @@
                 $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
-            if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
@@ -990,10 +989,10 @@
                 $result->AddPage(new PageLink($this->RenderText('Rule'), 'rule.php', $this->RenderText('Rule'), $currentPageCaption == $this->RenderText('Rule'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('vqueue_stats')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics'), true, 'Statistics'));
-            if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_lasthour')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour'), false, 'Statistics'));
+            if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_downloading')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading'), false, 'Statistics'));
             
@@ -2363,6 +2362,7 @@
             ApplyCommonPageSettings($this, $result);
             
             $result->SetUseImagesForActions(true);
+            $result->SetDefaultOrdering('LAST_UPDATE', otDescending);
             $result->SetUseFixedHeader(false);
             $result->SetShowLineNumbers(false);
             $result->SetShowKeyColumnsImagesInHeader(false);

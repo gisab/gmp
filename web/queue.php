@@ -596,8 +596,6 @@
                 $result->AddPage(new PageLink($this->RenderText('Area'), 'area.php', $this->RenderText('Area'), $currentPageCaption == $this->RenderText('Area'), false, 'Catalogue'));
             if (GetCurrentUserGrantForDataSource('queue')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Queue'), 'queue.php', $this->RenderText('Queue'), $currentPageCaption == $this->RenderText('Queue'), true, 'Queue'));
-            if (GetCurrentUserGrantForDataSource('files')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Files'), 'files.php', $this->RenderText('Files'), $currentPageCaption == $this->RenderText('Files'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('target')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Target'), 'target.php', $this->RenderText('Target'), $currentPageCaption == $this->RenderText('Target'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('agent')->HasViewGrant())
@@ -606,10 +604,10 @@
                 $result->AddPage(new PageLink($this->RenderText('Rule'), 'rule.php', $this->RenderText('Rule'), $currentPageCaption == $this->RenderText('Rule'), false, 'Queue'));
             if (GetCurrentUserGrantForDataSource('vqueue_stats')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Statistics'), 'vqueue_stats.php', $this->RenderText('Statistics'), $currentPageCaption == $this->RenderText('Statistics'), true, 'Statistics'));
-            if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
-                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_lasthour')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Last Hour'), 'vqueue_lasthour.php', $this->RenderText('Queue changed in the Last hour'), $currentPageCaption == $this->RenderText('Last Hour'), false, 'Statistics'));
+            if (GetCurrentUserGrantForDataSource('vqueue_nok')->HasViewGrant())
+                $result->AddPage(new PageLink($this->RenderText('Errors'), 'vqueue_nok.php', $this->RenderText('Errors'), $currentPageCaption == $this->RenderText('Errors'), false, 'Statistics'));
             if (GetCurrentUserGrantForDataSource('vqueue_downloading')->HasViewGrant())
                 $result->AddPage(new PageLink($this->RenderText('Downloading'), 'vqueue_downloading.php', $this->RenderText('Downloading queue'), $currentPageCaption == $this->RenderText('Downloading'), false, 'Statistics'));
             
@@ -1315,22 +1313,41 @@
                 $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
                 $customText .= 
                 '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
-                    ($fieldData == Q ? 'Queued' : 'None') . 
+                    ($fieldData == 'Q' ? 'Queued':'') .
+                    ($fieldData == 'C' ? 'Completed':'') .
+                    ($fieldData == 'N' ? 'Not queued':'') .
                 '</span>';
-                if ($fieldData == N) {
+                if ($fieldData == 'N') {
+                $customText .= 
+                '<button onclick="' . 
+                    "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');\n" . 
+                    "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');\n"  .
+                    "$.getJSON(
+                    'queue_status.php?id=" . $rowData['id'] . 
+                        "&dwnstatus=Q', " . 
+                    "function(data) { " . 
+                        "var newval=(data.dwnstatus == 'Q' ? 'Queued':'')+(data.dwnstatus == 'C' ? 'Completed':'')+(data.dwnstatus == 'N' ? 'Not queued':'');".
+                        "dwnstatusValue.html(newval);" . 
+                        "dwnstatusCaption.html(newval)" . 
+                    "});" . 
+                    "return false;". 
+                '">enqueue</button>';
+                }
+                if ($fieldData == 'Q') {
                 $customText .= 
                 '<button onclick="' . 
                     "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
                     "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');"  .
                     "$.getJSON(
                     'queue_status.php?id=" . $rowData['id'] . 
-                        "&dwnstatus=Q', " . 
+                        "&dwnstatus=N', " . 
                     "function(data) { " . 
-                        "dwnstatusValue.html(data.dwnstatus);" . 
-                        "dwnstatusCaption.html(data.dwnstatus == 1)" . 
+                        "var newval=(data.dwnstatus == 'Q' ? 'Queued':'')+(data.dwnstatus == 'C' ? 'Completed':'')+(data.dwnstatus == 'N' ? 'Not queued':'');".
+                        "dwnstatusValue.html(newval);" . 
+                        "dwnstatusCaption.html(newval)" . 
                     "});" . 
                     "return false;". 
-                '">Queue</button>';
+                '">dequeue</button>';
                 }
                 $handled = true;
             }
@@ -1352,22 +1369,41 @@
                 $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
                 $customText .= 
                 '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
-                    ($fieldData == Q ? 'Queued' : 'None') . 
+                    ($fieldData == 'Q' ? 'Queued':'') .
+                    ($fieldData == 'C' ? 'Completed':'') .
+                    ($fieldData == 'N' ? 'Not queued':'') .
                 '</span>';
-                if ($fieldData == N) {
+                if ($fieldData == 'N') {
+                $customText .= 
+                '<button onclick="' . 
+                    "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');\n" . 
+                    "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');\n"  .
+                    "$.getJSON(
+                    'queue_status.php?id=" . $rowData['id'] . 
+                        "&dwnstatus=Q', " . 
+                    "function(data) { " . 
+                        "var newval=(data.dwnstatus == 'Q' ? 'Queued':'')+(data.dwnstatus == 'C' ? 'Completed':'')+(data.dwnstatus == 'N' ? 'Not queued':'');".
+                        "dwnstatusValue.html(newval);" . 
+                        "dwnstatusCaption.html(newval)" . 
+                    "});" . 
+                    "return false;". 
+                '">enqueue</button>';
+                }
+                if ($fieldData == 'Q') {
                 $customText .= 
                 '<button onclick="' . 
                     "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
                     "var dwnstatusCaption = $(this).siblings('.queue_dwnstatus_caption');"  .
                     "$.getJSON(
                     'queue_status.php?id=" . $rowData['id'] . 
-                        "&dwnstatus=Q', " . 
+                        "&dwnstatus=N', " . 
                     "function(data) { " . 
-                        "dwnstatusValue.html(data.dwnstatus);" . 
-                        "dwnstatusCaption.html(data.dwnstatus == 1)" . 
+                        "var newval=(data.dwnstatus == 'Q' ? 'Queued':'')+(data.dwnstatus == 'C' ? 'Completed':'')+(data.dwnstatus == 'N' ? 'Not queued':'');".
+                        "dwnstatusValue.html(newval);" . 
+                        "dwnstatusCaption.html(newval)" . 
                     "});" . 
                     "return false;". 
-                '">Queue</button>';
+                '">dequeue</button>';
                 }
                 $handled = true;
             }
@@ -1403,6 +1439,7 @@
             ApplyCommonPageSettings($this, $result);
             
             $result->SetUseImagesForActions(true);
+            $result->SetDefaultOrdering('LAST_UPDATE', otDescending);
             $result->SetUseFixedHeader(false);
             $result->SetShowLineNumbers(false);
             $result->SetShowKeyColumnsImagesInHeader(false);
