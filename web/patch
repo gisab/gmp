@@ -1,0 +1,8 @@
+#!/bin/bash
+for ifile in area.php product.php vslc.php
+do
+  echo "processing $ifile"
+  cp $ifile $ifile.bkp
+  sed -i .1.bkp "s/1=1/'. \$qwhere .'/g" $ifile
+  sed -i .2.bkp "s/\$selectQuery = '/global \$qwhere; \$selectQuery = ' /g" $ifile
+done
