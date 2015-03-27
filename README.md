@@ -10,7 +10,7 @@ The registration is free and implies you agree with the [TERMS AND CONDITIONS FO
 INSTALLATION
 ------------
 
-For the pre requirement and installation procedure, see the project wiki https://github.com/gisab/gmp/wiki/Installation-guide
+For the pre requirement and installation procedure, see the project wiki https://github.com/gisab/gmp/wiki/Installation-guidelines
 
 USE
 ---
