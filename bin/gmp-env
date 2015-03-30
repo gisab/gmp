@@ -10,10 +10,10 @@ finaliser_fh=306
 pluginDhus_fh=307
 
 #timeouts expressed in ddhhmmss
-libQueue_to=10000
-pluginoda_to=10000
-dbcron_to=20000
-downloader_to=30000
-downloadmanager_to=5000000
-finaliser_to=10000
-pluginDhus_to=10000
+libQueue_timeout=10000
+pluginoda_timeout=10000
+dbcron_timeout=20000
+downloader_timeout=30000
+downloadmanager_timeout=5000000
+finaliser_timeout=10000
+pluginDhus_timeout=10000

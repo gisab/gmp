@@ -31,8 +31,8 @@ for pid in $procs; do
     # if proces runs 5 minutes then kill it
     if [ "$min" -gt $timeout ]; then
         #kill -9 $pid
-        echo "WARNING Process $pid is running for more than $timeout; killing it" >>$LOG 2>>$LOG
-        echo `ps -o etime $pid` >>$LOG 2>>$LOG
+        echo "WARNING Process $pid is running for more than $timeout; killing it" >>$mlog 2>>$mlog
+        echo `ps -o etime $pid` >>$mlog 2>>$mlog
         kill $pid
     fi
 done;
