@@ -39,7 +39,7 @@ done;
 
 
 eval "exec $fh>$mpid"
-eval "flock -x -w 1 -e $fh || exit 1" 
+eval "flock -x -w 1 -e $fh || exit 0" 
 
 echo `date` " Calling  ${prjfolder}/bin/${app} " >> $mlog
 
