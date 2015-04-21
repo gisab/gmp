@@ -19,7 +19,8 @@ echo '------- Starting  at ' `date` >>$mlog
 #Check if process is a zombie, i.e. dead but running for more than $timeout (ddhhmmss)
 
 # Get all PIDs for process name
-procs=(`ps aux | grep  $myself | grep bash | awk '{print $2}'`)
+processes="libQueue\|$app\|$myself"
+procs=(`ps aux | grep  $processes | grep 'bash\|python' | awk '{print $2}'`)
 
 # for each PID in PIDs array
 for pid in $procs; do
