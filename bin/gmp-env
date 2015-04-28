@@ -19,7 +19,7 @@ finaliser_timeout=10000
 pluginDhus_timeout=10000
 
 function monitorProcesses {
-    $processes=$1
+    processes=$1
     procs=`ps aux | grep  $processes | grep 'bash\|python' | awk '{print $2}'`
     
     # for each PID in PIDs array

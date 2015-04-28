@@ -20,7 +20,7 @@ echo '------- Starting  at ' `date` >>$mlog
 
 # Get all PIDs for process name
 processes="pluginOda.py\|$app\|$myself"
-monitorProcesses $processes
+monitorProcesses $processes >> $mlog
 
 eval "exec $fh>$mpid"
 eval "flock -x -w 1 -e $fh || exit 0" 
