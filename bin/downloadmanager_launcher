@@ -20,24 +20,7 @@ echo '------- Starting  at ' `date` >>$mlog
 
 # Get all PIDs for process name
 processes="downloadManager\|$app\|$myself"
-procs=`ps aux | grep  $processes | grep 'bash\|python' | awk '{print $2}'`
-
-# for each PID in PIDs array
-for pid in $procs; do
-    echo "WARNING: Found process $pid already running"
-    ps aux |grep $pid |grep -v grep |grep -v "ps aux"
-    # get elapsed time in form mm:ss and remove ":" character
-    # to make it easier to parse time 
-    # $time is 'ELAPSED' for missing $pid
-    time=`ps -o etime $pid | sed -e 's/[:-]//g'|tail -1`
-    # if proces runs since more than $timeout kill it
-    if [ "$time" -gt $timeout ]; then
-        echo "WARNING Process $pid is running for more than $timeout; killing it" >>$mlog 2>>$mlog
-        echo `ps -o etime $pid` >>$mlog 2>>$mlog
-        kill $pid
-    fi
-done;
-
+monitorProcesses $processes
 
 eval "exec $fh>$mpid"
 eval "flock -x -w 1 -e $fh || exit 0" 
