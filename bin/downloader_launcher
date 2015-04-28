@@ -20,10 +20,12 @@ echo '------- Starting  at ' `date` >>$mlog
 
 # Get all PIDs for process name
 processes="downloader\|$app\|$myself"
-procs=(`ps aux | grep  $processes | grep 'bash\|python' | awk '{print $2}'`)
+procs=`ps aux | grep  $processes | grep 'bash\|python' | awk '{print $2}'`
 
 # for each PID in PIDs array
 for pid in $procs; do
+    echo "WARNING: Found process $procs already running"
+    more /proc/$procs/cmdline
     # get elapsed time in form mm:ss and remove ":" character
     # to make it easier to parse time 
     time=(`ps -o etime $pid | sed -e 's/[:-]//g'`)
