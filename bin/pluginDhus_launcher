@@ -19,20 +19,19 @@ echo '------- Starting  at ' `date` >>$mlog
 #Check if process is a zombie, i.e. dead but running for more than $timeout (ddhhmmss)
 
 # Get all PIDs for process name
+processes="pluginDhus.py\|$app\|$myself"
 procs=`ps aux | grep  $processes | grep 'bash\|python' | awk '{print $2}'`
 
 # for each PID in PIDs array
 for pid in $procs; do
-    echo "WARNING: Found process $procs already running"
-    more /proc/$procs/cmdline
+    echo "WARNING: Found process $pid already running"
+    ps aux |grep $pid |grep -v grep |grep -v "ps aux"
     # get elapsed time in form mm:ss and remove ":" character
     # to make it easier to parse time 
-    time=(`ps -o etime $pid | sed -e 's/[:-]//g'`)
-    # get minutes from time
-    min=${time[1]}
-    # if proces runs 5 minutes then kill it
-    if [ "$min" -gt $timeout ]; then
-        #kill -9 $pid
+    # $time is 'ELAPSED' for missing $pid
+    time=`ps -o etime $pid | sed -e 's/[:-]//g'|tail -1`
+    # if proces runs since more than $timeout kill it
+    if [ "$time" -gt $timeout ]; then
         echo "WARNING Process $pid is running for more than $timeout; killing it" >>$mlog 2>>$mlog
         echo `ps -o etime $pid` >>$mlog 2>>$mlog
         kill $pid
@@ -45,6 +44,7 @@ eval "flock -x -w 1 -e $fh || exit 0"
 
 echo `date` " Calling  ${prjfolder}/bin/${app} " >> $mlog
 
+alog=${prjfolder}/log/${app}.log
 ${prjfolder}/bin/${app} 1>>$mlog 2>>$mlog
 
 echo `date` " Completed " >> $mlog
