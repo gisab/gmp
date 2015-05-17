@@ -94,17 +94,52 @@ class queue(object):
         try:
             self.db.exe(qry)
         except:
-            print "Product already exists; maybe it comes from other sources"
+            print "Product %s already exists; maybe it comes from other sources" % newItemObj.ID
         
         #Insert record into QUEUE table
         if hasattr(newItemObj,'forcedStatus'):
             newStatus=newItemObj.forcedStatus
         else:
             newStatus=cnew
-        qry="INSERT INTO queue (id,status,agentid,targetid,note) values ('%s','%s','%s','%s','%s');" % (newItemObj.ID,newStatus,newItemObj.agentID,newItemObj.targetID,newItemObj.note)
-        if debug:
-            print qry
-        self.db.exe(qry)
+        #check if product already exist:
+        # if not: is is added
+        # if alredy exist, add note field with new metadata
+        qry="SELECT ID, note from queue where ID='%s';" % (newItemObj.ID)
+        self.db.cur.execute(qry)
+        rec=self.db.cur.fetchone()
+        if rec==None:
+            #no record found; adding new record
+            qry="INSERT INTO queue (id,status,agentid,targetid,note) values ('%s','%s','%s','%s','%s');" % (newItemObj.ID,newStatus,newItemObj.agentID,newItemObj.targetID,newItemObj.note)
+            if debug:
+                print qry
+            self.db.exe(qry)
+        else:
+            #record found; update note field if newnote is not already in oldnote field
+            print "Product already exists in queue; updating note field with new dataset id"
+            oldnote=rec[1]                #oldnote 
+            oldnotearr=oldnote.split(';') #oldnote is now an array
+            #try to check if datasetid already exist; extract from oldnote
+            datasetAlreadyExist=False
+            try:
+                newdatasetid=json.loads(newItemObj.note)['datasetid']
+            except:
+                print "failed to extract datasetid from <%s>" & newItemObj.note
+                newdatasetid='#'
+            for inote in oldnotearr:
+                try:
+                    iolddatasetid=json.loads(inote)['datasetid']
+                except:
+                    iolddatasetid='!!'
+                if iolddatasetid==newdatasetid:
+                    datasetAlreadyExist=True
+            if datasetAlreadyExist==False:
+                #update note field with new dataset
+                print "     new datasetid: %s" % newdatasetid
+                newNote=oldnote+'; '+newItemObj.note
+                qry="UPDATE queue set note='%s' where ID='%s';" % (newNote, newItemObj.ID)
+                if debug:
+                    print qry
+                self.db.exe(qry)                
         
         #Insert records into FILES table
         qry='INSERT INTO files (qid, targetid, filename, url) values ("%s","%s", "%s", "%s");'
