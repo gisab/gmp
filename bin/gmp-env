@@ -24,6 +24,10 @@ function monitorProcesses {
     
     # for each PID in PIDs array
     for pid in $procs; do
+        if [ $pid -eq $$ ]; then
+           # $pid is the current bash script
+           continue
+        fi
         #echo "WARNING: Found process $pid already running"
         #ps aux |grep $pid |grep -v grep |grep -v "ps aux"
         # get elapsed time in form mm:ss and remove ":" character
