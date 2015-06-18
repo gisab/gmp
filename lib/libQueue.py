@@ -197,7 +197,9 @@ class queue(object):
         qwhere+=oquery
         if lockpid=='#':
             #get withoud locking the first avaiable item in the list
-            qry="SELECT ID, STATUS FROM queue where %s order by LAST_UPDATE ASC limit 1;" % (qwhere)
+            #Patch to give priority to Emergency products
+            #qry="SELECT ID, STATUS FROM queue where %s order by LAST_UPDATE ASC limit 1;" % (qwhere)
+            qry="SELECT ID, STATUS FROM queue where " + qwhere + " order by (if (note like '%\"EM_%','EM','ZZ')) ASC, LAST_UPDATE ASC limit 1;" 
             self.db.cur.execute(qry)
             rec=self.db.cur.fetchone()
             if rec==None:
@@ -209,7 +211,9 @@ class queue(object):
             self.db.cur.execute(qry)
             #get and lock the first avaiable item in the list
             fromStatusCriteria = "'"+"','".join(fromStatus)+"'" 
-            qry="SELECT ID, TARGETID FROM queue where %s and pid is null order by LAST_UPDATE ASC limit 1 FOR UPDATE;" % (qwhere)
+            #Patch to give priority to Emergency products
+            #qry="SELECT ID, TARGETID FROM queue where %s and pid is null order by LAST_UPDATE ASC limit 1 FOR UPDATE;" % (qwhere)
+            qry="SELECT ID, TARGETID FROM queue where " + qwhere + " and pid is null order by (if (note like '%\"EM_%','EM','ZZ')) ASC, LAST_UPDATE ASC limit 1 FOR UPDATE;" 
             counter=0
             while True:
                 if counter>5:

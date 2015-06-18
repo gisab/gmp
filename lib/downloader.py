@@ -85,7 +85,7 @@ def main():
         #no record found
         return
     #pprint.pprint(y.__dict__)
-    print "Downloading %s" % y.id
+    log("Downloading %s" % y.id)
     
     #Redirecting the log
     #logFileName=prjFolder+'/log/downloads/'+ y.id + '.log'
