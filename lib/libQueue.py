@@ -67,15 +67,15 @@ pythonex=config.ini.get('general','pythonex')
 class queue(object):
     def __init__(self,init='#'):
         self.getqueue()
-        if init=='new':
-            self.db=dbif.gencur('DELETE FROM queue')
-            self.db.connection.commit()
-            self.getqueue()
+        #if init=='new':
+        #    self.db=dbif.gencur('DELETE FROM queue')
+        #    self.db.connection.commit()
+        #    self.getqueue()
         pass
 
     def getqueue(self):
-        self.db=dbif.gencur('SELECT * FROM queue')
-        self.queue=self.db.cur.fetchall()
+        self.db=dbif.gencur('SELECT * FROM queue limit 1;')
+        #self.queue=self.db.cur.fetchall()
     
     def search(self,condition):
         qry="SELECT queue.id FROM queue inner join product on queue.id = product.id where %s order by queue.LAST_UPDATE ASC;" % (condition)
