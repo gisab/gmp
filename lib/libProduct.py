@@ -27,6 +27,7 @@ import dbif
 import time
 from lxml import etree
 import json
+import traceback
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -152,12 +153,16 @@ class product(object):
     
     def catalogue(self):
         wkt=self.footprint
-        qry="SELECT id,`name`, AsText(geom) FROM area WHERE MBRContains(GeomFromText('%s'),geom);" % wkt
+        qry="SELECT DISTINCT id,`name`, AsText(geom) FROM area WHERE MBRContains(GeomFromText('%s'),geom);" % wkt
         db=dbif.gencur(qry)
         res=db.cur.fetchall()
         for icountry in res:
             print "adding tag %s" % icountry[1]
-            self.addTag(icountry[1])
+            try:
+                self.addTag(icountry[1])
+            except:
+                print "ERROR: Failed to add tag %s" % icountry[1]
+                traceback.print_exc(file=sys.stdout)
             
 def gml2wkt(gml):
     tmp=gml.replace(',','/').replace(' ',',').replace('/',' ')
