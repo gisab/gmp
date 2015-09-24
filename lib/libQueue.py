@@ -395,6 +395,7 @@ class queuedItem(object):
             pass
         self.last_update=rec[6]
         self.closeStatus=closeStatus
+        self.emergencyDataset="#"
         
         #Get the target characteristic
         self.connection=dbif.getTargetList("id='%s'" % self.targetid)[0]
@@ -615,7 +616,16 @@ class queuedItem(object):
         x['status']   =status
         self.files.append(x)
         pass
-
+    
+    def getEmergencyDataset(self):
+        try:
+            import re
+            x=re.search('\"EM_\w+\"',str(self.note))
+            self.emergencyDataset=x.group().replace('"','')
+        except:
+            self.emergencyDataset="!"
+        pass
+    
 class newItem(object):
     def __init__(self):
         default="#"

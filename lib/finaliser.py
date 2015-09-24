@@ -76,6 +76,7 @@ def main():
             #Create the queueItem object starting from the ID
             try:
                 queuedItem=libQueue.queuedItem(queuedItemID)
+                queuedItem.getEmergencyDataset()
                 log("  Found item %s; object succesfully loaded " % queuedItemID)
             except:
                 log("  Found item %s; error in initializing the object" % queuedItemID)
