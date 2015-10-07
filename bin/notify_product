@@ -1,0 +1,24 @@
+#!/bin/bash
+# send mail
+# $1 = Product
+
+subject="Sentinel-1 Emergency Products availability"
+from="noreply-gmp@cpds.sentinel1.eo.esa.int"
+to="gianluca.sabella@gmail.com, betlem.rosich@esa.int, Fabio.LoZito@serco.com, patrick.grimont@esa.int, emergency@copernicus.esa.int, rapidmapping@ems-copernicus.eu, emergency@e-geos.it, emergency.rush@e-geos.it, emergency@gaf.de, emergency@sirs-fr.com, emergency@ithaca.polito.it, gio-ems-rush@jrc.ec.europa.eu"
+
+/usr/sbin/sendmail "$to" <<EOF
+subject:$subject
+from:$from
+Dear user,
+
+a new product for the COPERNICUS Emergency service is available for download: 
+$1
+
+You can download at this url
+ftp://s1emergency:superFast@cpds.sentinel1.eo.esa.int/data/$1.zip
+
+Best regards
+The S1 operations team 
+
+P.S. For any issue with the data download, please contact gianluca.sabella@esa.int
+EOF
