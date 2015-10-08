@@ -1,6 +1,14 @@
 #!/bin/bash
 # send mail
 # $1 = Product
+# $2 = Dataset
+
+prjfolder=/usr/local/gmp/
+source ${prjfolder}/bin/gmp-env
+myself=$(basename $0)
+mlog=${prjfolder}/$logfolder/$myself.history
+
+echo `date +"%Y-%m-%dT%H:%M:%SZ"` $1 $2 >>$mlog
 
 subject="Sentinel-1 Emergency Products availability"
 from="noreply-gmp@cpds.sentinel1.eo.esa.int"
@@ -13,6 +21,8 @@ Dear user,
 
 a new product for the COPERNICUS Emergency service is available for download: 
 $1
+
+Dataset: $2
 
 You can download at this url
 ftp://s1emergency:superFast@cpds.sentinel1.eo.esa.int/data/$1.zip
