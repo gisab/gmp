@@ -620,8 +620,8 @@ class queuedItem(object):
     def getEmergencyDataset(self):
         try:
             import re
-            x=re.search('\"EM_\w+\"',str(self.note))
-            self.emergencyDataset=x.group().replace('"','')
+            x=re.search('EM_\w+',str(self.note))
+            #self.emergencyDataset=x.group().replace('"','')
         except:
             self.emergencyDataset="!"
         pass
