@@ -17,8 +17,8 @@ prjName='gmp'
 APPID  ='pluginDhus'
 #currDir=os.getcwd()
 import os,sys
-currDir=os.path.realpath(__file__)
-prjFolder=currDir.split(prjName)[0]+prjName
+thisFolder=os.path.dirname(__file__)
+prjFolder=os.path.split(thisFolder)[0]
 sys.path.append(prjFolder+'/lib')
 from lxml import etree
 import pluginClass
