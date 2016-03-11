@@ -71,6 +71,7 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
             self.conn = httplib.HTTPConnection(self.host,self.port)
         if self.protocol=='https':
             self.conn = httplib.HTTPSConnection(self.host,self.port)
+        #print self.__dict__
         
     ## Ovverride of the generic downloadPlan function
     # @param self The object pointer
@@ -82,7 +83,7 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
         except:
             #the file is not existing; init class with default parameters
             self.res=dict()
-            self.res['last_execution_time']=datetime.datetime(2014, 12, 1, 00, 00, 00, 000001).isoformat()
+            self.res['last_execution_time']=datetime.datetime(2015, 11, 30, 00, 00, 00, 000001).isoformat()
 
         d=datetime.datetime.strptime(self.res['last_execution_time'],'%Y-%m-%dT%H:%M:%S.%f')
         delta = datetime.timedelta(days=1)

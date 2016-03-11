@@ -13,8 +13,8 @@
 prjName='gmp'
 #currDir=os.getcwd()
 import os,sys
-currDir=os.path.realpath(__file__)
-prjFolder=currDir.split(prjName)[0]+prjName
+thisFolder=os.path.dirname(__file__)
+prjFolder=os.path.split(thisFolder)[0]
 sys.path.append(prjFolder+'/lib')
 
 import MySQLdb
@@ -595,7 +595,8 @@ class queuedItem(object):
                 self.product.addJson({itag:val})
     
     def storeDhusMetadata(self):
-        qry="UPDATE product set wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (self.coordinatesWKT, self.coordinatesWKT, self.id)
+        #qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (self.size, self.coordinatesWKT, self.id)
+        qry="UPDATE product set footprint=GeomFromText('%s') where id ='%s';" % (self.coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
     
