@@ -13,7 +13,7 @@
 prjName='gmp'
 #currDir=os.getcwd()
 import os,sys
-thisFolder=os.path.dirname(__file__)
+thisFolder=os.path.dirname(os.path.abspath(__file__))
 prjFolder=os.path.split(thisFolder)[0]
 sys.path.append(prjFolder+'/lib')
 
