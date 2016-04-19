@@ -11,7 +11,7 @@
 ###########################################################
 
 ## @package pluginODA
-# This module make a spacialization of the generic pluginClass for the ODA
+# This module make a specialization of the generic pluginClass for the ODA
 
 prjName='gmp'
 APPID  ='pluginOda'
