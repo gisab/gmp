@@ -496,7 +496,7 @@ class queuedItem(object):
     
     ## Search for the manifest and create file and xml handlers
     def openManifest(self):
-        if self.targettype=='dhus':
+        if self.targettype=='dhus' or self.targettype=='ftpz':
             #open zipfile
             import zipfile
             archive = zipfile.ZipFile(rep+self.files[0]['filename'], 'r')
@@ -610,7 +610,10 @@ class queuedItem(object):
         #Insert records into FILES table
         qry="INSERT INTO files (qid, targetid, filename, url) values ('%s', '%s', '%s', '%s');"
         iqry=qry % (self.id, self.targetid, filename, url)
-        self.db.exe(iqry)
+        try:
+           self.db.exe(iqry)
+        except:
+           traceback.print_exc(file=sys.stdout)
         x=dict()
         x['filename'] =filename
         x['url']      =url
