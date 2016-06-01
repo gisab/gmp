@@ -66,6 +66,10 @@ def getPlugin(target,connection):
         import pluginLocalFS
         x=pluginLocalFS.gmpPluginLFS(connection)
         return x
+    if target=='ftpz':
+        import pluginLocalFS
+        x=pluginFTP.gmpPluginFTPZ(connection)
+        return x
     raise Exception('getPlugin', 'Target %s for product %s is unknown' % (target, queuedItem.id) )
     return
     
