@@ -563,7 +563,15 @@ class queuedItem(object):
         #kmlraw=kmlraw.replace('$TSTOP' ,self.product.json['stopTime'])
         #kmlbody=kmlraw
         #qry="UPDATE product set kml='%s', wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (kmlbody, self.coordinatesWKT, self.coordinatesWKT, self.id)
-        qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (self.size, self.coordinatesWKT, self.id)
+        try:
+            size=self.size
+        except:
+            size=-1
+        try:
+            coordinatesWKT=self.coordinatesWKT
+        except:
+            coordinatesWKT='POINT(0 0)'
+        qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (size, coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
 
