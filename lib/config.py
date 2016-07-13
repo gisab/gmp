@@ -27,6 +27,13 @@ ini=ConfigParser.SafeConfigParser()
 #Second config file, if present, override the first one
 ini.read([os.path.split(os.path.realpath(__file__))[0]+"/config.ini","config.ini","config-local.ini"])
 
+def getBool(section,option):
+    x=ini.get(section,option)
+    if x.lower() in ("yes", "true", "t", "1"):
+        return True
+    else:
+        return False
+
 def getPath(section, variable):
     value=ini.get(section,variable)
     value=value.replace('/',os.path.sep)
