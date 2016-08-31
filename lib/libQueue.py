@@ -513,8 +513,12 @@ class queuedItem(object):
             for i in self.files:
                 if 'manifest' in i['filename'].lower():
                     print 'manifest: %s' % i['filename']
-                    manifest=i['filename']
-                    self.manifestPath=rep+manifest
+                    manifest=i['filename'].replace('/','_')
+                    try:
+                        part=re.search('\d{8}T\d{6}', manifest).group()[2:8]
+                    except:
+                        part='000000'
+                    self.manifestPath='/%s/%s/%s' % (rep, part, manifest)
                     self.manifestParser=etree.parse(self.manifestPath)
                     break
             return 
@@ -741,7 +745,7 @@ def parallelWorkflow():
         try:
             part=re.search('\d{8}T\d{6}', qItem).group()[2:8]
         except:
-            part='other'
+            part='000000'
         logfolder="%s/log/prod/%s" % (prjFolder, part)
         if not os.path.exists(logfolder):
             os.makedirs(logfolder, 0777)
