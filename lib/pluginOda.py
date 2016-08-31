@@ -35,6 +35,7 @@ import pprint
 import json
 import subprocess
 import traceback
+import re
 
 #config
 #host     = config.ini.get(APPID,'host')
@@ -149,9 +150,14 @@ class gmpPluginOda(pluginClass.gmpPlugin):
         #search for manifest
         for ifile in queuedItem.files:
             if 'manifest' in ifile['filename'].lower():
-                repFolder=config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
                 maxBandwidth=config.ini.get('downloader','maxBandwidth')
-                targetFilename=repFolder+ifile['filename']
+                repFolder=config.ini.get('downloader','repository').replace('$PRJ',prjFolder)
+                manifest=ifile['filename'].replace('/','_')
+                try:
+                    part=re.search('\d{8}T\d{6}', manifest).group()[2:8]
+                except:
+                    part='000000'
+                targetFilename='/%s/manifests_%s/%s' % (repFolder, part, manifest)
                 targetFolder=os.path.split(targetFilename)[0]
                 if not os.path.exists(targetFolder):
                     os.makedirs(targetFolder)
