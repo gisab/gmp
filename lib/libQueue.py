@@ -32,6 +32,7 @@ import libProduct
 import json
 import subprocess
 import datetime
+import re
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -719,7 +720,7 @@ def parallelWorkflow():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     q=libQueue.queue()
-    condition="STATUS !='%s' and STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 3 MINUTE)" %(ccatalogued, cnok)
+    condition="STATUS !='%s' and STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 10 SECOND)" %(ccatalogued, cnok)
     qItemList=q.search(condition)
     for qItem in qItemList:
         currMonitor=downloader.monitorChilds(childs)
@@ -737,7 +738,15 @@ def parallelWorkflow():
             for i in diff:
                 print "MAIN: Completed " + status + " process " +str(i)
         previousMonitor=currMonitor
-        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>>%s/log/prod/%s.log 2>>%s/log/prod/%s.log" % (prjFolder, qItem, prjFolder, qItem, prjFolder, qItem)
+        try:
+            part=re.search('\d{8}T\d{6}', qItem).group()[2:8]
+        except:
+            part='other'
+        logfolder="%s/log/prod/%s" % (prjFolder, part)
+        if not os.path.exists(logfolder):
+            os.makedirs(logfolder, 0777)
+        logfile="%s/%s.log" % (logfolder, qItem)
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>>%s 2>>%s" % (prjFolder, qItem, logfile, logfile)
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         proc=dict()
@@ -884,7 +893,6 @@ if __name__ == "__main__":
         parallelWorkflow()
         sys.exit(0)
     if args.go:
-        parallelWorkflow()
         q=queue()
         q.cleanpid()
         q.cleanNOK()
