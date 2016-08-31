@@ -91,7 +91,7 @@ def main():
         log('MAIN: Spawning new process ')
         newProc=subprocess.Popen(['/bin/sh', '-c', cli + ' ']);
         childs.append(newProc)
-        time.sleep(20)
+        time.sleep(sleepTimeBetweenDownloader)
 
     subprocess.os.wait()
     result=monitorChilds(childs)

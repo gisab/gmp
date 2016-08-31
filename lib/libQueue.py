@@ -13,7 +13,7 @@
 prjName='gmp'
 #currDir=os.getcwd()
 import os,sys
-thisFolder=os.path.dirname(__file__)
+thisFolder=os.path.dirname(os.path.abspath(__file__))
 prjFolder=os.path.split(thisFolder)[0]
 sys.path.append(prjFolder+'/lib')
 
@@ -32,6 +32,7 @@ import libProduct
 import json
 import subprocess
 import datetime
+import re
 
 CharToBool={'Y': True, 'N': False}
 BoolToChar={True:'Y', False:'N'}
@@ -496,7 +497,7 @@ class queuedItem(object):
     
     ## Search for the manifest and create file and xml handlers
     def openManifest(self):
-        if self.targettype=='dhus':
+        if self.targettype=='dhus' or self.targettype=='ftpz':
             #open zipfile
             import zipfile
             archive = zipfile.ZipFile(rep+self.files[0]['filename'], 'r')
@@ -512,8 +513,12 @@ class queuedItem(object):
             for i in self.files:
                 if 'manifest' in i['filename'].lower():
                     print 'manifest: %s' % i['filename']
-                    manifest=i['filename']
-                    self.manifestPath=rep+manifest
+                    manifest=i['filename'].replace('/','_')
+                    try:
+                        part=re.search('\d{8}T\d{6}', manifest).group()[2:8]
+                    except:
+                        part='000000'
+                    self.manifestPath='/%s/manifests_%s/%s' % (rep, part, manifest)
                     self.manifestParser=etree.parse(self.manifestPath)
                     break
             return 
@@ -563,7 +568,15 @@ class queuedItem(object):
         #kmlraw=kmlraw.replace('$TSTOP' ,self.product.json['stopTime'])
         #kmlbody=kmlraw
         #qry="UPDATE product set kml='%s', wkt='%s', footprint=GeomFromText('%s') where id ='%s';" % (kmlbody, self.coordinatesWKT, self.coordinatesWKT, self.id)
-        qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (self.size, self.coordinatesWKT, self.id)
+        try:
+            size=self.size
+        except:
+            size=-1
+        try:
+            coordinatesWKT=self.coordinatesWKT
+        except:
+            coordinatesWKT='POINT(0 0)'
+        qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (size, coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
 
@@ -610,7 +623,10 @@ class queuedItem(object):
         #Insert records into FILES table
         qry="INSERT INTO files (qid, targetid, filename, url) values ('%s', '%s', '%s', '%s');"
         iqry=qry % (self.id, self.targetid, filename, url)
-        self.db.exe(iqry)
+        try:
+           self.db.exe(iqry)
+        except:
+           traceback.print_exc(file=sys.stdout)
         x=dict()
         x['filename'] =filename
         x['url']      =url
@@ -708,7 +724,7 @@ def parallelWorkflow():
     previousMonitor['failed']=list()
     previousMonitor['ok']=list()
     q=libQueue.queue()
-    condition="STATUS !='%s' and STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 3 MINUTE)" %(ccatalogued, cnok)
+    condition="STATUS !='%s' and STATUS !='%s' and PID is null and queue.LAST_UPDATE <(now() - INTERVAL 10 SECOND)" %(ccatalogued, cnok)
     qItemList=q.search(condition)
     for qItem in qItemList:
         currMonitor=downloader.monitorChilds(childs)
@@ -726,7 +742,15 @@ def parallelWorkflow():
             for i in diff:
                 print "MAIN: Completed " + status + " process " +str(i)
         previousMonitor=currMonitor
-        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>>%s/log/prod/%s.log 2>>%s/log/prod/%s.log" % (prjFolder, qItem, prjFolder, qItem, prjFolder, qItem)
+        try:
+            part=re.search('\d{8}T\d{6}', qItem).group()[2:8]
+        except:
+            part='000000'
+        logfolder="%s/log/prod/%s" % (prjFolder, part)
+        if not os.path.exists(logfolder):
+            os.makedirs(logfolder, 0777)
+        logfile="%s/%s.log" % (logfolder, qItem)
+        cmd=pythonex +" %s/lib/libQueue.py --id %s 1>>%s 2>>%s" % (prjFolder, qItem, logfile, logfile)
         print cmd
         newProc=subprocess.Popen(['/bin/sh', '-c', cmd]);
         proc=dict()
@@ -873,7 +897,6 @@ if __name__ == "__main__":
         parallelWorkflow()
         sys.exit(0)
     if args.go:
-        parallelWorkflow()
         q=queue()
         q.cleanpid()
         q.cleanNOK()
