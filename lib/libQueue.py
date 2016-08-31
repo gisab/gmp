@@ -200,7 +200,7 @@ class queue(object):
             #get withoud locking the first avaiable item in the list
             #Patch to give priority to Emergency products
             #qry="SELECT ID, STATUS FROM queue where %s order by LAST_UPDATE ASC limit 1;" % (qwhere)
-            qry="SELECT ID, STATUS FROM queue where " + qwhere + " order by (if (note like '%\"EM_%','EM','ZZ')) ASC, LAST_UPDATE ASC limit 1;" 
+            qry="SELECT ID, STATUS FROM queue where " + qwhere + " order by (if ((note like '%\"EM_%') or (note like '%\"IU_%'),'EM','ZZ')) ASC, LAST_UPDATE ASC limit 1;" 
             self.db.cur.execute(qry)
             rec=self.db.cur.fetchone()
             if rec==None:
