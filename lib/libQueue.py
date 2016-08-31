@@ -518,7 +518,7 @@ class queuedItem(object):
                         part=re.search('\d{8}T\d{6}', manifest).group()[2:8]
                     except:
                         part='000000'
-                    self.manifestPath='/%s/%s/%s' % (rep, part, manifest)
+                    self.manifestPath='/%s/manifests_%s/%s' % (rep, part, manifest)
                     self.manifestParser=etree.parse(self.manifestPath)
                     break
             return 
