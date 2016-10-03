@@ -64,8 +64,10 @@ CREATE TABLE `files` (
   `LAST_UPDATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `targetid` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `ifunique` (`qid`,`filename`) USING BTREE,
   KEY `qid` (`qid`),
   KEY `qid_2` (`qid`,`targetid`),
+  KEY `if` (`filename`) USING BTREE,
   CONSTRAINT `fk` FOREIGN KEY (`qid`, `targetid`) REFERENCES `queue` (`id`, `targetid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
