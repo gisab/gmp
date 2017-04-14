@@ -2328,9 +2328,9 @@
                 $customText = '<div class="queue_dwnstatus_value" style="display: none;">'.$fieldData.'</div>';
                 $customText .= 
                 '<span class="queue_dwnstatus_caption" style="margin-right: 20px;">' . 
-                    ($fieldData == Q ? 'Queued' : 'None') . 
+                    ($fieldData == 'Q' ? 'Queued' : 'None') . 
                 '</span>';
-                if ($fieldData == N) {
+                if ($fieldData == 'N') {
                 $customText .= 
                 '<button onclick="' . 
                     "var dwnstatusValue = $(this).siblings('.queue_dwnstatus_value');" . 
