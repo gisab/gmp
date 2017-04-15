@@ -80,7 +80,7 @@ DROP TABLE IF EXISTS `product`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `product` (
-  `id` varchar(80) NOT NULL,
+  `id` varchar(128) NOT NULL,
   `LAST_UPDATE` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `producttype` varchar(8) DEFAULT NULL,
   `orbit` int(6) DEFAULT NULL,
