@@ -46,7 +46,7 @@ agent    = config.ini.get(APPID,'agent')
 metadatafile=config.getPath(APPID,'metadatafile')
 resourcefile=config.getPath(APPID,'resourcefile')
 dhusMetadataRepository=config.getPath(APPID,'dhusmetadatarepository')
-maxDayLoop=config.ini.get(APPID,'maxDayLoop')
+maxDayLoop=int(config.ini.get(APPID,'maxDayLoop'))
 configStartCatalogueDate=config.ini.get(APPID,'StartCatalogueDate')
 
 debug    = True
