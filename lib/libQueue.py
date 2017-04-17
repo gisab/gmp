@@ -124,7 +124,7 @@ class queue(object):
             try:
                 newdatasetid=json.loads(newItemObj.note)['datasetid']
             except:
-                print "failed to extract datasetid from <%s>" & newItemObj.note
+                print "failed to extract datasetid from <%s>" % str(newItemObj.note)
                 newdatasetid='#'
             for inote in oldnotearr:
                 try:
@@ -841,7 +841,7 @@ def checkConnectionParameters(connection):
             print "parameter %s not found in connection.keys()" % parameter
             check=False
         if connection[parameter] in ('','None','Null','#'):
-            print "parameter %s not initialized (found %s)" % connection[parameter]
+            print "parameter %s not initialized (found %s)" % (parameter, connection[parameter])
             check=False
     return check
 

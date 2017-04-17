@@ -45,6 +45,9 @@ agent    = config.ini.get(APPID,'agent')
 metadatafile=config.getPath(APPID,'metadatafile')
 resourcefile=config.getPath(APPID,'resourcefile')
 dhusMetadataRepository=config.getPath(APPID,'dhusmetadatarepository')
+maxDayLoop=config.ini.get(APPID,'maxDayLoop')
+configStartCatalogueDate=config.ini.get(APPID,'StartCatalogueDate')
+
 debug    = True
 
 ## gmpPluginDhus class
@@ -83,11 +86,11 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
         except:
             #the file is not existing; init class with default parameters
             self.res=dict()
-            self.res['last_execution_time']=datetime.datetime(2015, 11, 30, 00, 00, 00, 000001).isoformat()
+            self.res['last_execution_time']=configStartCatalogueDate
 
         d=datetime.datetime.strptime(self.res['last_execution_time'],'%Y-%m-%dT%H:%M:%S.%f')
         delta = datetime.timedelta(days=1)
-        
+        dayloop=0
 
         while d <= datetime.datetime.now():
             self.plan=list()
@@ -95,9 +98,9 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
             print "Searching products ingested on day %s " % d.strftime("%Y-%m-%d")
 
             turl=url.replace('$YEAR',str(d.year)).replace('$MONTH', str(d.month)).replace('$DAY',str(d.day))
-            prevskip=skip=0
-
+            prevskip=0
             skip=0
+            total=0
             while(True):
                 queryurl=turl.replace('$SKIP',str(skip))
                 #print queryurl
@@ -106,23 +109,34 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
                 nProdCurrent=len(self.plan)
                 prevskip=skip
                 skip+=nProdCurrent-nProdPrevious
-                print "   found %s products (total %s)" % (str(skip),len(self.plan))
+                total+=nProdCurrent
+                print "   found %s products (total %s)" % (nProdCurrent,total)
+                self.storePlan()
+                self.plan=list()
                 #print "nProdCurrent %s; nProdPrevious %s; skip %s" % (nProdCurrent, nProdPrevious, skip)
                 if prevskip==skip:
                     #no new record found; exiting from loop
                     #print "no new record found on this day"
                     break
-            self.storePlan()
-            d += delta
         
-        #set the execution time to be saved at the end of the loop in case the routine go till the end
-        self.res['last_execution_time']=datetime.datetime.now().isoformat()
-        #save the last execution time
-        json.dump(self.res,open(resourcefile,'w'))
+            #set the execution time to be saved at the end of the loop in case the routine go till the end
+            self.res['last_execution_time']=d.isoformat()
+            #save the last execution time
+            json.dump(self.res,open(resourcefile,'w'))
+
+            d += delta
+            dayloop+=1
+            if dayloop>=maxDayLoop:
+                break
+        pass
     
     def getPlan_byurl(self,queryurl):
         queryurl=urllib.quote(queryurl,'/&?()$=')
-        #print queryurl
+        isOdata='odata' in queryurl
+        if isOdata:
+            print "Query URL ODATA: %s" %  queryurl
+        else:
+            print "Query URL OpenSearch: %s" %  queryurl
         self.conn.request('GET', queryurl, headers=self.headers)
         res = self.conn.getresponse()
         if res.status!=200:
@@ -137,21 +151,32 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
             return
         data=res.read()
         data=data.replace('&lt;','<')
+        data=data.replace('&gt;','>')
         data=data.replace('<?xml version="1.0" encoding="UTF-8" standalone="no"?>','\n')
         open("dhus.xml", "w").write(data)
         parser = etree.fromstring(data)
         for prod in parser.findall(".//{*}entry"):
             note=dict()
             #id
-            tmp=prod.find('.//{*}Id')
-            note['id']=tmp.text
-            #Product attributes
-            tmp=prod.find('.//{*}file')
-            fname=tmp.attrib['name']
-            tmp=prod.find('.//{*}url')
-            furl=tmp.text.replace('\n','').replace("'","\'")
+            if isOdata:
+                tmp=prod.find('.//{*}Id')
+                note['id']=tmp.text
+                #Product attributes
+                tmp=prod.find('.//{*}file')
+                fname=tmp.attrib['name']
+                tmp=prod.find('.//{*}url')
+                furl=tmp.text.replace('\n','').replace("'","\'")
+            else:
+                tmp=prod.find('.//{*}id')
+                note['id']=tmp.text                
+                #Product attributes
+                tmp=prod.find('.//{*}title')
+                fname=tmp.text+'.zip'
+                tmp=prod.find('.//{*}link')
+                furl=tmp.attrib['href']
             #tmp=prod.find('.//{*}coordinates')
             #pcoord=tmp.text
+
             #Creating libQueue object
             newItem=libQueue.newItem()
             newItem.setID(fname[:-4]+'.SAFE')
