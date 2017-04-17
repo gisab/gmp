@@ -32,6 +32,7 @@ import datetime
 import pprint
 import json
 import traceback
+import time
 
 #config
 #host     = config.ini.get(APPID,'host')
@@ -124,9 +125,12 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
             #save the last execution time
             json.dump(self.res,open(resourcefile,'w'))
 
+            time.sleep(3)
+            
             d += delta
             dayloop+=1
             if dayloop>=maxDayLoop:
+                print "maxDayLoop condition reached; exiting"
                 break
         pass
     
