@@ -70,7 +70,7 @@ class gencur(object):
         
         for idump in dumpfiles:
             ifile=prjFolder+'/db/'+idump
-            cli='mysql --user=%s --password=%s --host=%s --port=%s --database=%s < %s'
+            cli="mysql --user='%s' --password='%s' --host='%s' --port='%s' --database='%s' < '%s'"
             cli=cli % (cuser, cpwd, chost, cport, cschema, ifile)
             try:
                 #print cli
