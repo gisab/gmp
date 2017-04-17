@@ -89,7 +89,7 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
             self.res=dict()
             self.res['last_execution_time']=configStartCatalogueDate
 
-        d=datetime.datetime.strptime(self.res['last_execution_time'],'%Y-%m-%dT%H:%M:%S.%f')
+        d=datetime.datetime.strptime(self.res['last_execution_time'],'%Y-%m-%dT%H:%M:%S')
         delta = datetime.timedelta(days=1)
         dayloop=0
 
