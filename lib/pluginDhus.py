@@ -96,7 +96,8 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
         while d <= datetime.datetime.now():
             self.plan=list()
             
-            print "Searching products ingested on day %s " % d.strftime("%Y-%m-%d")
+            print "*"*40
+            print "Searching products ingested on day %s (%s/%s) " % (d.strftime("%Y-%m-%d"),dayloop,maxDayLoop)
 
             turl=url.replace('$YEAR',str(d.year)).replace('$MONTH', str(d.month)).replace('$DAY',str(d.day))
             prevskip=0
