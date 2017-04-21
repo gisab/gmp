@@ -166,7 +166,14 @@ class queue(object):
             iqry=qry % (newItemObj.ID, newItemObj.targetID, i['filename'], i['url'])
             if debug:
                 print iqry
-            self.db.exe(iqry)
+            try:
+                self.db.exe(qry)
+            except MySQLdb.IntegrityError as e:
+                if e[0] == 1062:
+                    #entry already present; discarding error message
+                    pass
+                else:
+                    raise e
         pass
     
     def getItemDownloaded(self,pid='#'):
