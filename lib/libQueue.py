@@ -94,8 +94,12 @@ class queue(object):
             print qry
         try:
             self.db.exe(qry)
-        except:
-            print "Product %s already exists; maybe it comes from other sources" % newItemObj.ID
+        except MySQLdb.IntegrityError as e:
+            if e[0] == 1062:
+                #entry already present; discarding error message
+                pass
+            else:
+                raise e
         
         #Insert record into QUEUE table
         if hasattr(newItemObj,'forcedStatus'):
@@ -116,16 +120,20 @@ class queue(object):
             self.db.exe(qry)
         else:
             #record found; update note field if newnote is not already in oldnote field
-            print "Product already exists in queue; updating note field with new dataset id"
+            #print "Product already exists in queue; updating note field with new metadata"
             oldnote=rec[1]                #oldnote 
             oldnotearr=oldnote.split(';') #oldnote is now an array
             #try to check if datasetid already exist; extract from oldnote
             datasetAlreadyExist=False
+            dhusIdAlreadyExist=False
             try:
                 newdatasetid=json.loads(newItemObj.note)['datasetid']
             except:
-                print "failed to extract datasetid from <%s>" % str(newItemObj.note)
                 newdatasetid='#'
+            try:
+                newdhusid=json.loads(newItemObj.note)['id']
+            except:
+                newdhusid='#'
             for inote in oldnotearr:
                 try:
                     iolddatasetid=json.loads(inote)['datasetid']
@@ -133,10 +141,20 @@ class queue(object):
                     iolddatasetid='!!'
                 if iolddatasetid==newdatasetid:
                     datasetAlreadyExist=True
-            if datasetAlreadyExist==False:
+                try:
+                    iolddhusid=json.loads(inote)['id']
+                except:
+                    iolddhusid='!!'
+                if iolddhusid==newdhusid:
+                    dhusIdAlreadyExist=True
+            if datasetAlreadyExist==False and dhusIdAlreadyExist==False:
                 #update note field with new dataset
-                print "     new datasetid: %s" % newdatasetid
+                if newdatasetid!='#':
+                    print "     updating note field with new datasetid: %s" % newdatasetid
+                if newdhusid!='#':
+                    print "     updating note field with new dhusid: %s" % newdhusid
                 newNote=oldnote+'; '+newItemObj.note
+                newNote=newNote.strip(' ;')
                 qry="UPDATE queue set note='%s' where ID='%s';" % (newNote, newItemObj.ID)
                 if debug:
                     print qry
