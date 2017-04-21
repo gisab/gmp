@@ -801,7 +801,8 @@ def process(id):
             time.sleep(10)
             #note: when recreating x, the delete of the previous instance remove the pid lock!
             x=queuedItem(id)
-        break
+        else:
+            break
 
     x.setPid(pid)
     print "processing product %s" % id
