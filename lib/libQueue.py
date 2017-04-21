@@ -597,39 +597,6 @@ class queuedItem(object):
         qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (size, coordinatesWKT, self.id)
         self.db.exe(qry)
         pass
-
-    ## Search for the manifest and create file and xml handlers
-    def openDhusMetadata(self):
-        assert self.targettype=='dhus'
-        dhusMetadataRepository=config.ini.get('pluginDhus','dhusmetadatarepository').replace('$PRJ',prjFolder)
-        for i in self.files:
-            if 'xml' in i['filename'].lower():
-                print 'metadata file: %s' % i['filename']
-                metadata=i['filename']
-                self.metadataPath=dhusMetadataRepository+metadata
-                self.metadataParser=etree.parse(self.metadataPath)
-                break
-        return 
-
-    ## Search for the manifest and create file and xml handlers
-    def parseDhusMetadata(self):
-        #if self.manifestParser:
-        if hasattr(self,'metadataParser'):
-            self.coordinatesKML=self.metadataParser.find('.//{*}coordinates').text
-            #TODO: WARNING
-            #DHUS footprint is wrong and coordinates are swapped
-            #to take into account DHuS bug, the coordinates are swapped
-            self.coordinatesWKT=gml2wkt(self.coordinatesKML)
-            self.coordinatesWKT=gml2wkt_swap(self.coordinatesKML)
-            for itag in ('Start','End'):
-                val=self.metadataParser.find('.//{http://schemas.microsoft.com/ado/2007/08/dataservices}'+itag).text
-                self.product.addJson({itag:val})
-    
-    def storeDhusMetadata(self):
-        #qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (self.size, self.coordinatesWKT, self.id)
-        qry="UPDATE product set footprint=GeomFromText('%s') where id ='%s';" % (self.coordinatesWKT, self.id)
-        self.db.exe(qry)
-        pass
     
     def close(self):
         if self.closeStatus!='#':

@@ -33,6 +33,8 @@ import pprint
 import json
 import traceback
 import time
+import re
+import libProduct
 
 #config
 #host     = config.ini.get(APPID,'host')
@@ -222,13 +224,18 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
         data=res.read()
         data=data.replace('&lt;','<')
         data=data.replace('<?xml version="1.0" encoding="UTF-8" standalone="no"?>','\n')
-        targetFilename=dhusMetadataRepository+queuedItem.id+metadatafile
+
+        targetFilename=getDhusMetadataFilename(queuedItem.id)
+        targetFolder=os.path.split(targetFilename)[0]
+        if not os.path.exists(targetFolder):
+            os.makedirs(targetFolder)
+
         #try to parse data and reformat it
         try:
             #prettydata=etree.dump(etree.fromstring(data),pretty_print=True)
             xmldata=etree.fromstring(data)
-            open(targetFilename, "w").write(etree.tostring(xmldata))
-            queuedItem.addFile(filename=queuedItem.id+metadatafile, url='',status=libQueue.cDwnStatusCompleted)
+            open(targetFilename, "w").write(etree.tostring(xmldata,pretty_print=True))
+            #queuedItem.addFile(filename=queuedItem.id+metadatafile, url='',status=libQueue.cDwnStatusCompleted)
         except:
             open(targetFilename, "w").write(data)
             print "Failed to parse dhus metadata"
@@ -237,9 +244,45 @@ class gmpPluginDhus(pluginClass.gmpPlugin):
     
     def parseMetadata(self,queuedItem):
         #parse manifest in local rep that has been already downloaded by getMetadta function
-        queuedItem.openDhusMetadata()
-        queuedItem.parseDhusMetadata()
-        queuedItem.storeDhusMetadata()
+        self.openDhusMetadata(queuedItem)
+        self.parseDhusMetadata(queuedItem)
+        self.storeDhusMetadata(queuedItem)
+
+    ## Search for the manifest and create file and xml handlers
+    def openDhusMetadata(self,queuedItem):
+        assert queuedItem.targettype=='dhus'
+        queuedItem.metadataPath=getDhusMetadataFilename(queuedItem.id)
+        queuedItem.metadataParser=etree.parse(queuedItem.metadataPath)
+        return 
+
+    ## Search for the manifest and create file and xml handlers
+    def parseDhusMetadata(self,queuedItem):
+        #if self.manifestParser:
+        if hasattr(queuedItem,'metadataParser'):
+            queuedItem.coordinatesKML=queuedItem.metadataParser.find('.//{*}coordinates').text
+            #TODO: WARNING
+            #DHUS footprint is wrong and coordinates are swapped
+            #to take into account DHuS bug, the coordinates are swapped
+            queuedItem.coordinatesWKT=libProduct.gml2wkt(queuedItem.coordinatesKML)
+            queuedItem.coordinatesWKT=libProduct.gml2wkt_swap(queuedItem.coordinatesKML)
+            for itag in ('Start','End'):
+                val=queuedItem.metadataParser.find('.//{http://schemas.microsoft.com/ado/2007/08/dataservices}'+itag).text
+                queuedItem.product.addJson({itag:val})
+    
+    def storeDhusMetadata(self,queuedItem):
+        #qry="UPDATE product set size=%s, footprint=GeomFromText('%s') where id ='%s';" % (self.size, self.coordinatesWKT, self.id)
+        qry="UPDATE product set footprint=GeomFromText('%s') where id ='%s';" % (queuedItem.coordinatesWKT, queuedItem.id)
+        queuedItem.db.exe(qry)
+        pass
+
+def getDhusMetadataFilename(productid):
+    #Evaluate partition and filename for dhus.xml
+    try:
+        part=re.search('\d{8}T\d{6}', productid).group()[2:8]
+    except:
+        part='000000'
+    targetFilename='/%s/dhus_%s/%s' % (dhusMetadataRepository, part, productid+metadatafile)
+    return targetFilename
 
 def testworkflow():
     #check DB connection
